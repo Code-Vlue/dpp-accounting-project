@@ -383,6 +383,26 @@ class GeneralLedgerService {
   private fiscalPeriods: FiscalPeriod[] = mockFiscalPeriods;
   private accountBalances: AccountBalance[] = mockAccountBalances;
   private auditLogs: AuditLogEntry[] = mockAuditLogs;
+  
+  // Create a new journal entry
+  async createJournalEntry(journalEntryData: Omit<JournalEntry, 'id' | 'createdAt' | 'updatedAt'>): Promise<JournalEntry> {
+    // Create base transaction first
+    const transaction = await this.createTransaction(journalEntryData);
+    
+    // Create journal entry
+    const newJournalEntry: JournalEntry = {
+      ...transaction,
+      reason: journalEntryData.reason || '',
+      recurring: journalEntryData.recurring || false,
+      recurringSchedule: journalEntryData.recurringSchedule,
+      approvalStatus: journalEntryData.approvalStatus || ApprovalStatus.PENDING
+    };
+    
+    this.journalEntries.push(newJournalEntry);
+    this.createAuditLog('CREATE', 'JOURNAL_ENTRY', newJournalEntry.id, newJournalEntry.createdById, 'Created journal entry');
+    
+    return Promise.resolve(newJournalEntry);
+  }
 
   // Get all transactions
   async getAllTransactions(): Promise<Transaction[]> {

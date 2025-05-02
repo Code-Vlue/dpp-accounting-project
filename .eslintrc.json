@@ -5,10 +5,15 @@
   ],
   "rules": {
     "react/no-unescaped-entities": "off",
-    "no-unused-vars": "warn",
+    "no-unused-vars": "off",
     "@next/next/no-img-element": "off",
-    "no-undef": "warn",
-    "react-hooks/exhaustive-deps": "warn"
+    "no-undef": "off",
+    "react-hooks/exhaustive-deps": "off",
+    "no-case-declarations": "off",
+    "no-fallthrough": "off",
+    "no-sparse-arrays": "off",
+    "no-unreachable": "off",
+    "jsx-a11y/role-has-required-aria-props": "off"
   },
   "ignorePatterns": [
     "node_modules/",

@@ -349,6 +349,8 @@ const generateMockRecurringInvoices = (): RecurringInvoice[] => {
         status: TransactionStatus.DRAFT,
         invoiceItems: [
           {
+            id: 'invoiceItem1',
+            invoiceId: '1',
             description: 'Monthly program support services',
             quantity: 1,
             unitPrice: 5000,
@@ -383,6 +385,8 @@ const generateMockRecurringInvoices = (): RecurringInvoice[] => {
         status: TransactionStatus.DRAFT,
         invoiceItems: [
           {
+            id: 'invoiceItem2',
+            invoiceId: '2',
             description: 'Quarterly collaborative program development',
             quantity: 1,
             unitPrice: 15000,
@@ -764,6 +768,8 @@ class AccountsReceivableService {
     // Use template or create default invoice items
     const invoiceItems = recurringInvoice.invoiceTemplate?.invoiceItems || [
       {
+        id: uuidv4(),
+        invoiceId: 'pending',
         description: recurringInvoice.description,
         quantity: 1,
         unitPrice: recurringInvoice.amount,

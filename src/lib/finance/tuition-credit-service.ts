@@ -104,7 +104,7 @@ class TuitionCreditService {
     );
   }
 
-  async createTuitionCredit(creditData: Omit<TuitionCredit, 'id' | 'createdAt' | 'updatedAt' | 'entries'>): Promise<TuitionCredit> {
+  async createTuitionCredit(creditData: Omit<TuitionCredit, 'id' | 'createdAt' | 'updatedAt' | 'entries'> & { accountId?: string }): Promise<TuitionCredit> {
     const provider = await this.getProviderById(creditData.providerId);
     if (!provider) {
       throw new Error(`Provider ${creditData.providerId} not found`);
@@ -120,7 +120,9 @@ class TuitionCreditService {
         debitAmount: creditData.dppPortion,
         creditAmount: 0,
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
+        fundId: undefined,
+        departmentId: undefined
       },
       {
         id: uuidv4(),
@@ -130,7 +132,9 @@ class TuitionCreditService {
         debitAmount: 0,
         creditAmount: creditData.dppPortion,
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
+        fundId: undefined,
+        departmentId: undefined
       }
     ];
     

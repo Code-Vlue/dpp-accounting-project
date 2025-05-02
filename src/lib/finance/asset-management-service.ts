@@ -13,7 +13,8 @@ import {
   Transaction,
   TransactionType,
   TransactionStatus,
-  TransactionEntry
+  TransactionEntry,
+  ApprovalStatus
 } from '@/types/finance';
 import { financeService } from './finance-service';
 import { generalLedgerService } from './general-ledger-service';
@@ -457,19 +458,31 @@ class AssetManagementService {
         createdById: 'system',
         reason: 'Monthly depreciation',
         recurring: false,
-        approvalStatus: 'APPROVED',
+        approvalStatus: ApprovalStatus.APPROVED,
         entries: [
           {
+            id: `dep-exp-${new Date().getTime()}`,
+            transactionId: 'pending',
             accountId: asset.depreciationExpenseAccountId,
             description: `Depreciation expense for ${asset.name}`,
             debitAmount: depreciationAmount,
-            creditAmount: 0
+            creditAmount: 0,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            fundId: undefined,
+            departmentId: asset.department
           },
           {
+            id: `acc-dep-${new Date().getTime()}`,
+            transactionId: 'pending',
             accountId: asset.accumulatedDepreciationAccountId,
             description: `Accumulated depreciation for ${asset.name}`,
             debitAmount: 0,
-            creditAmount: depreciationAmount
+            creditAmount: depreciationAmount,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            fundId: undefined,
+            departmentId: asset.department
           }
         ]
       });
@@ -627,37 +640,61 @@ class AssetManagementService {
         createdById: disposalData.createdById,
         reason: `Asset disposal via ${disposalData.disposalMethod}`,
         recurring: false,
-        approvalStatus: 'APPROVED',
+        approvalStatus: ApprovalStatus.APPROVED,
         entries: [
           // Remove the asset from books
           {
+            id: `accum-dep-${new Date().getTime()}`,
+            transactionId: 'pending',
             accountId: asset.accumulatedDepreciationAccountId,
             description: 'Remove accumulated depreciation',
             debitAmount: totalAccumulatedDepreciation,
-            creditAmount: 0
+            creditAmount: 0,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            fundId: undefined,
+            departmentId: asset.department
           },
           {
+            id: `asset-${new Date().getTime()}`,
+            transactionId: 'pending',
             accountId: asset.accountId,
             description: 'Remove asset cost basis',
             debitAmount: 0,
-            creditAmount: asset.purchasePrice
+            creditAmount: asset.purchasePrice,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            fundId: undefined,
+            departmentId: asset.department
           },
           // Record sale proceeds if applicable
           ...(netSaleProceeds > 0 ? [
             {
+              id: `proceeds-${new Date().getTime()}`,
+              transactionId: 'pending',
               accountId: '101', // Cash or receivable account
               description: 'Sale proceeds',
               debitAmount: netSaleProceeds,
-              creditAmount: 0
+              creditAmount: 0,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+              fundId: undefined,
+              departmentId: asset.department
             }
           ] : []),
           // Record gain/loss
           ...(gainLoss !== 0 ? [
             {
+              id: `gain-loss-${new Date().getTime()}`,
+              transactionId: 'pending',
               accountId: gainLoss > 0 ? '701' : '801', // Gain or loss account
               description: `${gainLoss > 0 ? 'Gain' : 'Loss'} on asset disposal`,
               debitAmount: gainLoss < 0 ? Math.abs(gainLoss) : 0,
-              creditAmount: gainLoss > 0 ? gainLoss : 0
+              creditAmount: gainLoss > 0 ? gainLoss : 0,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+              fundId: undefined,
+              departmentId: asset.department
             }
           ] : [])
         ]

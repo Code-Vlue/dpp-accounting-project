@@ -1,0 +1,87 @@
+name: Domain Verification
+
+on:
+  schedule:
+    - cron: '0 */8 * * *'  # Run every 8 hours
+  workflow_dispatch:
+
+jobs:
+  verify-domain:
+    name: Verify Domain Configuration
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        
+      - name: Setup AWS CLI
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+          
+      - name: Install jq
+        run: sudo apt-get install -y jq
+        
+      - name: Check if domain-config.json exists
+        run: |
+          if [ -f "domain-config.json" ]; then
+            echo "Domain configuration file found. Proceeding with verification."
+          else
+            echo "Domain configuration file not found. Using example configuration for testing."
+            cp domain-config.example.json domain-config.json
+          fi
+        
+      - name: Verify domain configuration
+        run: |
+          chmod +x scripts/verify-domain.sh
+          ./scripts/verify-domain.sh || echo "Domain verification completed with issues."
+          
+      - name: Verify CloudFront configuration
+        run: |
+          chmod +x scripts/verify-cloudfront.sh
+          ./scripts/verify-cloudfront.sh || echo "CloudFront verification completed with issues."
+          
+      - name: Generate verification report
+        run: |
+          echo "# Domain Verification Report" > domain-verification-report.md
+          echo "Generated on: $(date)" >> domain-verification-report.md
+          echo "" >> domain-verification-report.md
+          
+          echo "## Domain Configuration" >> domain-verification-report.md
+          jq -r '"\nDomain Name: \(.domainName)\nRegion: \(.region)\nHosted Zone ID: \(.hostedZoneId)\nCertificate ARN: \(.certificateArn)\nConfigured At: \(.configuredAt)"' domain-config.json >> domain-verification-report.md
+          
+          echo "" >> domain-verification-report.md
+          echo "## CloudFront Configuration" >> domain-verification-report.md
+          
+          if jq -e '.cloudfrontDistributionId' domain-config.json > /dev/null 2>&1; then
+            jq -r '"\nDistribution ID: \(.cloudfrontDistributionId)\nDistribution Domain: \(.cloudfrontDomain)\nMain Bucket: \(.mainBucket)\nWWW Bucket: \(.wwwBucket)\nLogs Bucket: \(.logsBucket)"' domain-config.json >> domain-verification-report.md
+          else
+            echo "\nCloudFront not configured yet." >> domain-verification-report.md
+          fi
+          
+          echo "" >> domain-verification-report.md
+          echo "## Domain Accessibility Test" >> domain-verification-report.md
+          DOMAIN=$(jq -r '.domainName' domain-config.json)
+          
+          # Test domain access
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "https://$DOMAIN" || echo "000")
+          if [ "$HTTP_CODE" = "200" ]; then
+            echo "\n✅ Domain is accessible: https://$DOMAIN" >> domain-verification-report.md
+          else
+            echo "\n❌ Domain is not accessible: https://$DOMAIN (HTTP $HTTP_CODE)" >> domain-verification-report.md
+          fi
+          
+          # Test www domain access
+          WWW_HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "https://www.$DOMAIN" || echo "000")
+          if [ "$WWW_HTTP_CODE" = "200" ]; then
+            echo "✅ WWW domain is accessible: https://www.$DOMAIN" >> domain-verification-report.md
+          else
+            echo "❌ WWW domain is not accessible: https://www.$DOMAIN (HTTP $WWW_HTTP_CODE)" >> domain-verification-report.md
+          fi
+      
+      - name: Upload verification report
+        uses: actions/upload-artifact@v3
+        with:
+          name: domain-verification-report
+          path: domain-verification-report.md

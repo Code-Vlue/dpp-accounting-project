@@ -1,0 +1,46 @@
+{
+  "name": "dpp-accounting-platform",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "type-check": "tsc --noEmit",
+    "deploy:dev": "bash ./scripts/deploy-to-aws.sh development",
+    "deploy:staging": "bash ./scripts/deploy-to-aws.sh staging",
+    "deploy:prod": "bash ./scripts/deploy-to-aws.sh production",
+    "verify:dev": "node ./scripts/verify-deployment.js development",
+    "verify:staging": "node ./scripts/verify-deployment.js staging",
+    "verify:prod": "node ./scripts/verify-deployment.js production"
+  },
+  "dependencies": {
+    "@aws-amplify/auth": "^6.12.4",
+    "@aws-sdk/client-cloudfront": "^3.798.0",
+    "@aws-sdk/client-cognito-identity-provider": "^3.798.0",
+    "@aws-sdk/client-s3": "^3.798.0",
+    "amazon-cognito-identity-js": "^6.3.15",
+    "aws-sdk": "^2.1692.0",
+    "chart.js": "^4.4.9",
+    "date-fns": "^4.1.0",
+    "next": "14.2.0",
+    "next-auth": "^4.24.11",
+    "react": "18.2.0",
+    "react-chartjs-2": "^5.3.0",
+    "react-dom": "18.2.0",
+    "recharts": "^2.15.3",
+    "zustand": "^5.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/react": "^18.2.38",
+    "@types/react-dom": "^18.2.15",
+    "autoprefixer": "10.4.17",
+    "eslint": "8.56.0",
+    "eslint-config-next": "14.2.0",
+    "postcss": "8.4.35",
+    "tailwindcss": "3.4.0",
+    "typescript": "5.3.3"
+  }
+}

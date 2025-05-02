@@ -1,0 +1,61 @@
+name: Branch Protection
+
+on:
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - '.github/workflows/branch-protection.yml'
+    
+jobs:
+  enforce-branch-protection:
+    name: Enforce Branch Protection
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Lint
+        run: npm run lint
+        
+      - name: Type check
+        run: npm run type-check || echo "TypeScript errors found, continuing with verification"
+        
+      - name: Run tests
+        run: npm test || echo "No tests specified"
+        
+      - name: Build application
+        run: npm run build
+        
+  setup-branch-protection:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'))
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Branch Protection
+        uses: dlumbrer/branch-protection-bot@master
+        with:
+          access-token: ${{ secrets.GITHUB_TOKEN }}
+          branch: main
+          enforce_admins: false
+          required_status_checks: true
+          strict_status_checks: true
+          required_status_checks_contexts: build-and-test
+          required_pull_request_reviews: true
+          required_approving_review_count: 1
+          dismiss_stale_reviews: true

@@ -1,0 +1,90 @@
+name: Manual Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'development'
+        type: choice
+        options:
+          - development
+          - staging
+          - production
+
+env:
+  NODE_VERSION: 18
+
+jobs:
+  deploy:
+    name: Deploy to ${{ github.event.inputs.environment }}
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Set environment variables
+        run: |
+          if [ "${{ github.event.inputs.environment }}" = "production" ]; then
+            echo "BUCKET_NAME=${{ secrets.PROD_BUCKET_NAME }}" >> $GITHUB_ENV
+            echo "CLOUDFRONT_DISTRIBUTION_ID=${{ secrets.PROD_CLOUDFRONT_DISTRIBUTION_ID }}" >> $GITHUB_ENV
+            echo "SITE_URL=${{ secrets.PROD_SITE_URL }}" >> $GITHUB_ENV
+          elif [ "${{ github.event.inputs.environment }}" = "staging" ]; then
+            echo "BUCKET_NAME=${{ secrets.STAGING_BUCKET_NAME }}" >> $GITHUB_ENV
+            echo "CLOUDFRONT_DISTRIBUTION_ID=${{ secrets.STAGING_CLOUDFRONT_DISTRIBUTION_ID }}" >> $GITHUB_ENV
+            echo "SITE_URL=${{ secrets.STAGING_SITE_URL }}" >> $GITHUB_ENV
+          else
+            echo "BUCKET_NAME=${{ secrets.DEV_BUCKET_NAME }}" >> $GITHUB_ENV
+            echo "CLOUDFRONT_DISTRIBUTION_ID=${{ secrets.DEV_CLOUDFRONT_DISTRIBUTION_ID }}" >> $GITHUB_ENV
+            echo "SITE_URL=${{ secrets.DEV_SITE_URL }}" >> $GITHUB_ENV
+          fi
+
+      - name: Deploy to S3
+        run: |
+          aws s3 sync .next/static s3://${{ env.BUCKET_NAME }}/_next/static/ --delete
+          aws s3 sync public s3://${{ env.BUCKET_NAME }}/public/ --delete
+          
+          # If using standalone output
+          if [ -f ".next/standalone/server.js" ]; then
+            aws s3 cp .next/standalone/server.js s3://${{ env.BUCKET_NAME }}/server.js
+          fi
+
+      - name: Invalidate CloudFront cache
+        if: env.CLOUDFRONT_DISTRIBUTION_ID != ''
+        run: aws cloudfront create-invalidation --distribution-id ${{ env.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/*"
+
+      - name: Verify deployment
+        run: |
+          # Create a simple verification check
+          echo "Verifying deployment to ${{ github.event.inputs.environment }} environment"
+          aws s3api head-bucket --bucket ${{ env.BUCKET_NAME }}
+          aws s3 ls s3://${{ env.BUCKET_NAME }}/_next/static/ --recursive --summarize
+          
+          if [ -n "${{ env.CLOUDFRONT_DISTRIBUTION_ID }}" ]; then
+            echo "Verifying CloudFront distribution: ${{ env.CLOUDFRONT_DISTRIBUTION_ID }}"
+            aws cloudfront get-distribution --id ${{ env.CLOUDFRONT_DISTRIBUTION_ID }} | grep -E 'Status|DomainName'
+          fi
+          
+          echo "Deployment complete and verified for ${{ github.event.inputs.environment }}"

@@ -1,0 +1,18 @@
+{
+  "domainName": "dpp-accounting-platform.example.com",
+  "hostedZoneId": "Z1234567890EXAMPLE",
+  "certificateArn": "arn:aws:acm:us-east-1:123456789012:certificate/example-cert-id",
+  "region": "us-east-1",
+  "nameServers": [
+    "ns-1234.awsdns-12.org",
+    "ns-567.awsdns-34.net",
+    "ns-8910.awsdns-56.com",
+    "ns-1112.awsdns-78.co.uk"
+  ],
+  "cloudfrontDistributionId": "E1EXAMPLE2ABCDE",
+  "cloudfrontDomain": "d123example.cloudfront.net",
+  "mainBucket": "dpp-accounting-platform-prod",
+  "wwwBucket": "www-dpp-accounting-platform-prod",
+  "logsBucket": "logs-dpp-accounting-platform-prod",
+  "originAccessIdentity": "E1F2G3H4EXAMPLE"
+}

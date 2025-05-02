@@ -1,0 +1,20 @@
+{
+  "extends": [
+    "next/core-web-vitals",
+    "eslint:recommended"
+  ],
+  "rules": {
+    "react/no-unescaped-entities": "off",
+    "no-unused-vars": "warn",
+    "@next/next/no-img-element": "off",
+    "no-undef": "warn",
+    "react-hooks/exhaustive-deps": "warn"
+  },
+  "ignorePatterns": [
+    "node_modules/",
+    ".next/",
+    "out/",
+    "public/",
+    "**/*.min.js"
+  ]
+}

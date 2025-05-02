@@ -1,0 +1,10 @@
+# These owners will be the default owners for everything in the repo
+* @admin-team
+
+# Frontend files
+/src/app/ @frontend-team
+/src/components/ @frontend-team
+
+# Backend and infrastructure files
+/infra/ @backend-team
+/.github/workflows/ @devops-team

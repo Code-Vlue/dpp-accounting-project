@@ -140,9 +140,43 @@ While the application is fully deployed, there are some items that require atten
    - Currently accessible via CloudFront domain
    - Custom domain configuration needed for production use
 
+## Recommended Deployment Approach
+
+For full server-side rendering support and dynamic functionality, we recommend deploying to AWS Amplify rather than the current static S3/CloudFront deployment. The following deployment options are available:
+
+### Option 1: AWS Amplify Console (Recommended)
+
+For the simplest deployment experience with full SSR support:
+
+1. Log in to the AWS Management Console
+2. Navigate to AWS Amplify
+3. Click "Create app" or "New app"
+4. Choose "Host web app"
+5. Connect to your GitHub repository
+6. Select the master branch
+7. Configure build settings:
+   - Verify the amplify.yml file is correctly set up
+   - Add necessary environment variables
+8. Review and deploy
+9. After deployment completes, your app will be available at the provided Amplify URL
+
+### Option 2: Manual Amplify Deployment (Advanced)
+
+For more control over the deployment process:
+
+1. Create an Amplify app using the AWS CLI
+2. Configure the necessary environment variables
+3. Create a deployment package with all required files
+4. Create a deployment and upload the package
+5. Start the deployment using the AWS CLI
+
+Detailed instructions for both approaches are available in:
+- AMPLIFY-CONSOLE-DEPLOYMENT.md
+- AMPLIFY-DEPLOYMENT-INSTRUCTIONS.md
+
 ## Next Steps
 
-1. Complete server component deployment
+1. Deploy to AWS Amplify for full server component support
 2. Configure custom domain and SSL certificate
 3. Set up monitoring and alerting
 4. Implement CI/CD pipeline for automated deployments

@@ -91,7 +91,13 @@ export default function BudgetRevisionForm({ budgetId, onCancel }: BudgetRevisio
 
   // Add a new change line
   const handleAddChangeLine = () => {
-    addBudgetRevisionChange();
+    // Create a placeholder change with default values
+    const newChange = {
+      changeType: 'ADD' as 'ADD',
+      description: '',
+      newAmount: 0
+    };
+    addBudgetRevisionChange(newChange);
   };
 
   // Remove a change line
@@ -169,7 +175,7 @@ export default function BudgetRevisionForm({ budgetId, onCancel }: BudgetRevisio
     setIsSubmitting(true);
 
     try {
-      await createBudgetRevision();
+      await createBudgetRevision(budgetRevisionDraft);
       router.push(`/finance/budgeting/annual/${budgetId}`);
     } catch (error) {
       console.error('Error creating budget revision:', error);
@@ -213,7 +219,7 @@ export default function BudgetRevisionForm({ budgetId, onCancel }: BudgetRevisio
               <h4 className="text-md font-medium leading-6 text-gray-700">Budget Details</h4>
               <p className="mt-1 text-sm text-gray-500">Current Budget: {formatCurrency(selectedBudget.totalAmount)}</p>
               <p className="mt-1 text-sm text-gray-500">Status: {selectedBudget.status}</p>
-              <p className="mt-1 text-sm text-gray-500">Fiscal Year: {selectedBudget.fiscalYear?.name || selectedBudget.fiscalYearId}</p>
+              <p className="mt-1 text-sm text-gray-500">Fiscal Year: {selectedBudget.fiscalYearId}</p>
             </div>
           </div>
           <div className="mt-5 md:mt-0 md:col-span-2">

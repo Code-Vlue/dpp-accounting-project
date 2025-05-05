@@ -12,6 +12,13 @@ interface TuitionCreditListProps {
   status?: TuitionCreditStatus;
   startDate?: Date;
   endDate?: Date;
+  // Required props
+  credits: TuitionCredit[];
+  onView?: (id: string) => void;
+  onEdit?: (id: string) => void;
+  showProvider?: boolean;
+  showStatus?: boolean;
+  providers?: any[]; // Using any[] for now, should be properly typed
 }
 
 export default function TuitionCreditList({ 
@@ -19,17 +26,27 @@ export default function TuitionCreditList({
   providerId, 
   status, 
   startDate,
-  endDate
+  endDate,
+  credits: propCredits,
+  onView,
+  onEdit,
+  showProvider = true,
+  showStatus = true,
+  providers = []
 }: TuitionCreditListProps) {
   const { tuitionCredits, tuitionCreditsLoading, tuitionCreditsError, fetchTuitionCredits } = useFinanceStore();
   const [filteredCredits, setFilteredCredits] = useState<TuitionCredit[]>([]);
   
   useEffect(() => {
-    fetchTuitionCredits();
-  }, [fetchTuitionCredits]);
+    // Only fetch if we're not given credits as props
+    if (!propCredits) {
+      fetchTuitionCredits();
+    }
+  }, [fetchTuitionCredits, propCredits]);
   
   useEffect(() => {
-    let filtered = [...tuitionCredits];
+    // Start with either the provided credits or the ones from the store
+    let filtered = propCredits ? [...propCredits] : [...tuitionCredits];
     
     // Filter by search term if provided
     if (searchTerm) {
@@ -61,13 +78,14 @@ export default function TuitionCreditList({
     }
     
     setFilteredCredits(filtered);
-  }, [tuitionCredits, searchTerm, providerId, status, startDate, endDate]);
+  }, [propCredits, tuitionCredits, searchTerm, providerId, status, startDate, endDate]);
   
-  if (tuitionCreditsLoading) {
+  // Only show loading/error states if we're not given credits via props
+  if (!propCredits && tuitionCreditsLoading) {
     return <div className="p-4 text-center">Loading tuition credits...</div>;
   }
   
-  if (tuitionCreditsError) {
+  if (!propCredits && tuitionCreditsError) {
     return <div className="p-4 text-center text-red-500">Error loading tuition credits: {tuitionCreditsError}</div>;
   }
   
@@ -119,20 +137,40 @@ export default function TuitionCreditList({
               </td>
               <td className="py-2 px-4 border-b">
                 <div className="flex space-x-2">
-                  <Link 
-                    href={`/finance/tuition-credits/credits/${credit.id}`}
-                    className="text-blue-600 hover:text-blue-800"
-                  >
-                    View
-                  </Link>
-                  {credit.creditStatus === TuitionCreditStatus.DRAFT && (
-                    <Link 
-                      href={`/finance/tuition-credits/credits/${credit.id}/edit`}
-                      className="text-green-600 hover:text-green-800"
+                  {onView ? (
+                    <button 
+                      onClick={() => onView(credit.id)}
+                      className="text-blue-600 hover:text-blue-800"
                     >
-                      Edit
+                      View
+                    </button>
+                  ) : (
+                    <Link 
+                      href={`/finance/tuition-credits/credits/${credit.id}`}
+                      className="text-blue-600 hover:text-blue-800"
+                    >
+                      View
                     </Link>
                   )}
+                  
+                  {credit.creditStatus === TuitionCreditStatus.DRAFT && (
+                    onEdit ? (
+                      <button 
+                        onClick={() => onEdit(credit.id)}
+                        className="text-green-600 hover:text-green-800"
+                      >
+                        Edit
+                      </button>
+                    ) : (
+                      <Link 
+                        href={`/finance/tuition-credits/credits/${credit.id}/edit`}
+                        className="text-green-600 hover:text-green-800"
+                      >
+                        Edit
+                      </Link>
+                    )
+                  )}
+                  
                   {credit.creditStatus === TuitionCreditStatus.PENDING_APPROVAL && (
                     <Link 
                       href={`/finance/tuition-credits/credits/${credit.id}/approve`}
@@ -141,6 +179,7 @@ export default function TuitionCreditList({
                       Approve
                     </Link>
                   )}
+                  
                   {(credit.creditStatus === TuitionCreditStatus.APPROVED || 
                     credit.creditStatus === TuitionCreditStatus.PROCESSED) && (
                     <Link 

@@ -7,8 +7,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ProviderForm } from '@/components/finance/tuition-credits';
 
 export default function ProviderOnboardingPage() {
-  // Unused variable prefixed with underscore
-  const _router = useRouter();
+  const router = useRouter();
+
+  const handleSubmit = async (providerData: any) => {
+    // This function will be passed to the ProviderForm component
+    // In a real implementation, we would do something with the providerData
+    console.log('Provider data submitted:', providerData);
+    
+    // Redirect to the providers list after submission
+    router.push('/finance/tuition-credits/providers');
+  };
 
   return (
     <div className="container mx-auto py-6">
@@ -22,7 +30,7 @@ export default function ProviderOnboardingPage() {
           <CardDescription>Follow the steps to onboard a new provider into the system</CardDescription>
         </CardHeader>
         <CardContent>
-          <ProviderForm isOnboarding={true} />
+          <ProviderForm isOnboarding={true} onSubmit={handleSubmit} />
         </CardContent>
       </Card>
     </div>

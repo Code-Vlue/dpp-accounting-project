@@ -113,21 +113,20 @@ export default function TuitionCreditsPage() {
             <CardDescription>All tuition credits in the system</CardDescription>
           </div>
           <div className="w-full sm:w-auto">
-            <Select value={statusFilter} onValueChange={handleStatusChange}>
-              <SelectTrigger className="w-full sm:w-[180px]">
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Credits</SelectItem>
-                <SelectItem value="pending">Pending Approval</SelectItem>
-                <SelectItem value="approved">Approved</SelectItem>
-                <SelectItem value="processed">Processed</SelectItem>
-                <SelectItem value="paid">Paid</SelectItem>
-                <SelectItem value="rejected">Rejected</SelectItem>
-                <SelectItem value="voided">Voided</SelectItem>
-                <SelectItem value="adjustments">Adjustments Only</SelectItem>
-              </SelectContent>
-            </Select>
+            <select 
+              value={statusFilter} 
+              onChange={(e) => handleStatusChange(e.target.value)}
+              className="w-full sm:w-[180px] px-3 py-2 border border-gray-300 rounded-md"
+            >
+              <option value="all">All Credits</option>
+              <option value="pending">Pending Approval</option>
+              <option value="approved">Approved</option>
+              <option value="processed">Processed</option>
+              <option value="paid">Paid</option>
+              <option value="rejected">Rejected</option>
+              <option value="voided">Voided</option>
+              <option value="adjustments">Adjustments Only</option>
+            </select>
           </div>
         </CardHeader>
         <CardContent>

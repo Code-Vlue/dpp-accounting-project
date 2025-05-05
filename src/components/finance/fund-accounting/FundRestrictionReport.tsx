@@ -31,6 +31,11 @@ const FundRestrictionReport: React.FC = () => {
         return 'Unknown';
     }
   };
+  
+  // Format currency with $ sign and 2 decimal places
+  const formatCurrency = (amount: number): string => {
+    return `$${amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`;
+  };
 
   if (fundAccountingLoading) {
     return <div className="p-4">Loading fund restriction report...</div>;
@@ -98,7 +103,7 @@ const FundRestrictionReport: React.FC = () => {
                     {getFundTypeLabel(fund.fundType)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
-                    ${fund.balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    {formatCurrency(fund.balance)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {fund.startDate && fund.endDate ? (
@@ -129,12 +134,12 @@ const FundRestrictionReport: React.FC = () => {
           {Object.entries(totalByType).map(([type, amount]) => (
             <div key={type} className="bg-white p-3 rounded border">
               <p className="text-xs text-gray-500">{getFundTypeLabel(type as FundType)}</p>
-              <p className="text-lg font-semibold">${amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+              <p className="text-lg font-semibold">{formatCurrency(Number(amount))}</p>
             </div>
           ))}
           <div className="bg-blue-50 p-3 rounded border border-blue-200">
             <p className="text-xs text-blue-700">Total All Funds</p>
-            <p className="text-lg font-semibold">${grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+            <p className="text-lg font-semibold">{formatCurrency(grandTotal)}</p>
           </div>
         </div>
       </div>

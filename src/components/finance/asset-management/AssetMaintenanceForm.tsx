@@ -20,28 +20,37 @@ export function AssetMaintenanceForm({
 }: AssetMaintenanceFormProps) {
   const { getAssetById, addAssetMaintenance, updateAssetMaintenance, getAssetMaintenanceById } = useFinanceStore();
   
-  const [formData, setFormData] = useState<Partial<AssetMaintenance>>(() => {
-    if (maintenanceId) {
-      const maintenance = getAssetMaintenanceById(maintenanceId);
-      return maintenance || {
-        assetId,
-        date: new Date().toISOString().split('T')[0],
-        description: '',
-        cost: 0,
-        performedBy: '',
-        notes: ''
-      };
-    }
-    
-    return {
-      assetId,
-      date: new Date().toISOString().split('T')[0],
-      description: '',
-      cost: 0,
-      performedBy: '',
-      notes: ''
-    };
+  // Initialize with default values
+  const [formData, setFormData] = useState<Partial<AssetMaintenance>>({
+    assetId,
+    date: new Date(), // Use Date object instead of string
+    description: '',
+    cost: 0,
+    maintenanceType: '', // Add required field
+    provider: '', // Add required field
+    notes: ''
   });
+  
+  // Load maintenance data if editing
+  React.useEffect(() => {
+    const loadMaintenance = async () => {
+      if (maintenanceId) {
+        try {
+          const maintenance = await getAssetMaintenanceById(maintenanceId);
+          if (maintenance) {
+            // Keep date as Date object to match interface
+            setFormData({
+              ...maintenance
+            });
+          }
+        } catch (error) {
+          console.error('Error loading maintenance record:', error);
+        }
+      }
+    };
+    
+    loadMaintenance();
+  }, [maintenanceId, getAssetMaintenanceById]);
   
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -61,6 +70,14 @@ export function AssetMaintenanceForm({
       newErrors.cost = 'Cost must be a positive number';
     }
     
+    if (!formData.maintenanceType) {
+      newErrors.maintenanceType = 'Maintenance type is required';
+    }
+    
+    if (!formData.provider) {
+      newErrors.provider = 'Provider is required';
+    }
+    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -71,6 +88,19 @@ export function AssetMaintenanceForm({
     setFormData(prev => ({
       ...prev,
       [name]: type === 'number' ? parseFloat(value) : value
+    }));
+    
+    // Clear error when field is changed
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    }
+  };
+  
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value ? new Date(value) : undefined
     }));
     
     // Clear error when field is changed
@@ -131,8 +161,8 @@ export function AssetMaintenanceForm({
               type="date"
               id="date"
               name="date"
-              value={formData.date || ''}
-              onChange={handleChange}
+              value={formData.date ? new Date(formData.date).toISOString().split('T')[0] : ''}
+              onChange={handleDateChange}
               className={`mt-1 block w-full rounded-md border ${errors.date ? 'border-red-500' : 'border-gray-300'} shadow-sm px-3 py-2`}
             />
             {errors.date && (
@@ -182,17 +212,39 @@ export function AssetMaintenanceForm({
           </div>
           
           <div className="space-y-2">
-            <label htmlFor="performedBy" className="block text-sm font-medium text-gray-700">
-              Performed By
+            <label htmlFor="maintenanceType" className="block text-sm font-medium text-gray-700">
+              Maintenance Type *
             </label>
             <input
               type="text"
-              id="performedBy"
-              name="performedBy"
-              value={formData.performedBy || ''}
+              id="maintenanceType"
+              name="maintenanceType"
+              required
+              value={formData.maintenanceType || ''}
               onChange={handleChange}
-              className="mt-1 block w-full rounded-md border border-gray-300 shadow-sm px-3 py-2"
+              className={`mt-1 block w-full rounded-md border ${errors.maintenanceType ? 'border-red-500' : 'border-gray-300'} shadow-sm px-3 py-2`}
             />
+            {errors.maintenanceType && (
+              <p className="mt-1 text-sm text-red-600">{errors.maintenanceType}</p>
+            )}
+          </div>
+          
+          <div className="space-y-2">
+            <label htmlFor="provider" className="block text-sm font-medium text-gray-700">
+              Provider/Vendor *
+            </label>
+            <input
+              type="text"
+              id="provider"
+              name="provider"
+              required
+              value={formData.provider || ''}
+              onChange={handleChange}
+              className={`mt-1 block w-full rounded-md border ${errors.provider ? 'border-red-500' : 'border-gray-300'} shadow-sm px-3 py-2`}
+            />
+            {errors.provider && (
+              <p className="mt-1 text-sm text-red-600">{errors.provider}</p>
+            )}
           </div>
           
           <div className="space-y-2 col-span-2">

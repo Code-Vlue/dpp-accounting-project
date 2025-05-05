@@ -8,7 +8,8 @@ import {
   Provider, 
   ProviderQualityRating,
   PaymentMethod,
-  PaymentStatus
+  PaymentStatus,
+  PaymentPriority
 } from '@/types/finance';
 
 interface QualityImprovementGrantFormProps {
@@ -111,8 +112,10 @@ export function QualityImprovementGrantForm({ providerId }: QualityImprovementGr
         qualityImprovementGrant: true,
         grantAmount: parseFloat(amount),
         grantReason: reason,
-        paymentPriority: 'NORMAL',
+        paymentPriority: PaymentPriority.NORMAL,
         createdById: 'current-user', // Would normally come from auth
+        createdAt: new Date(),
+        updatedAt: new Date()
       });
       
       // Navigate back to provider detail page

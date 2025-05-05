@@ -52,7 +52,7 @@ export default function BillForm({ billId, isEdit = false }: BillFormProps) {
     if (!isEdit) {
       const vendorIdParam = searchParams.get('vendorId');
       if (vendorIdParam) {
-        updateBillDraft({ vendorId: vendorIdParam });
+        updateBillDraft('vendorId', vendorIdParam);
       }
     }
     
@@ -68,25 +68,27 @@ export default function BillForm({ billId, isEdit = false }: BillFormProps) {
   useEffect(() => {
     if (isEdit && selectedBill) {
       // Transform selected bill into bill draft format
-      updateBillDraft({
-        vendorId: selectedBill.vendorId,
-        invoiceNumber: selectedBill.invoiceNumber,
-        invoiceDate: new Date(selectedBill.invoiceDate),
-        dueDate: new Date(selectedBill.dueDate),
-        description: selectedBill.description,
-        reference: selectedBill.reference || '',
-        items: selectedBill.billItems.map(item => ({
-          description: item.description,
-          quantity: item.quantity,
-          unitPrice: item.unitPrice,
-          accountId: item.accountId,
-          expenseCategory: item.expenseCategory,
-          taxable: item.taxable,
-          fundId: item.fundId,
-          departmentId: item.departmentId,
-          projectId: item.projectId
-        }))
-      });
+      // Update field by field
+      updateBillDraft('vendorId', selectedBill.vendorId);
+      updateBillDraft('billNumber', selectedBill.invoiceNumber);
+      updateBillDraft('billDate', new Date(selectedBill.invoiceDate));
+      updateBillDraft('dueDate', new Date(selectedBill.dueDate));
+      updateBillDraft('description', selectedBill.description);
+      updateBillDraft('referenceNumber', selectedBill.reference || '');
+      
+      // Update items
+      const billItems = selectedBill.billItems.map(item => ({
+        description: item.description,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        accountId: item.accountId,
+        expenseCategory: item.expenseCategory,
+        taxable: item.taxable,
+        fundId: item.fundId,
+        departmentId: item.departmentId,
+        projectId: item.projectId
+      }));
+      updateBillDraft('items', billItems);
     }
   }, [isEdit, selectedBill, updateBillDraft]);
   
@@ -97,7 +99,7 @@ export default function BillForm({ billId, isEdit = false }: BillFormProps) {
     
     try {
       // Submit the bill
-      await submitBill('user1'); // TODO: Replace with actual user ID
+      await submitBill(billDraft); // Pass the entire bill draft
       
       // Redirect based on action
       if (isEdit && billId) {
@@ -119,7 +121,7 @@ export default function BillForm({ billId, isEdit = false }: BillFormProps) {
   );
   
   // Find the vendor
-  const selectedVendor = vendors.find(v => v.vendorId === billDraft.vendorId);
+  const selectedVendor = vendors.find(v => v.id === billDraft.vendorId);
   
   if (isEdit && billsLoading) {
     return <div className="p-4 text-center">Loading bill data...</div>;
@@ -148,7 +150,7 @@ export default function BillForm({ billId, isEdit = false }: BillFormProps) {
               id="vendorId"
               name="vendorId"
               value={billDraft.vendorId}
-              onChange={(e) => updateBillDraft({ vendorId: e.target.value })}
+              onChange={(e) => updateBillDraft('vendorId', e.target.value)}
               required
               className="w-full p-2 border border-gray-300 rounded"
               disabled={isEdit}
@@ -174,8 +176,8 @@ export default function BillForm({ billId, isEdit = false }: BillFormProps) {
               type="text"
               id="invoiceNumber"
               name="invoiceNumber"
-              value={billDraft.invoiceNumber}
-              onChange={(e) => updateBillDraft({ invoiceNumber: e.target.value })}
+              value={billDraft.billNumber}
+              onChange={(e) => updateBillDraft('billNumber', e.target.value)}
               required
               className="w-full p-2 border border-gray-300 rounded"
             />
@@ -189,10 +191,8 @@ export default function BillForm({ billId, isEdit = false }: BillFormProps) {
               type="date"
               id="invoiceDate"
               name="invoiceDate"
-              value={billDraft.invoiceDate.toISOString().substring(0, 10)}
-              onChange={(e) => updateBillDraft({ 
-                invoiceDate: e.target.value ? new Date(e.target.value) : new Date() 
-              })}
+              value={billDraft.billDate.toISOString().substring(0, 10)}
+              onChange={(e) => updateBillDraft('billDate', e.target.value ? new Date(e.target.value) : new Date())}
               required
               className="w-full p-2 border border-gray-300 rounded"
             />
@@ -207,9 +207,7 @@ export default function BillForm({ billId, isEdit = false }: BillFormProps) {
               id="dueDate"
               name="dueDate"
               value={billDraft.dueDate.toISOString().substring(0, 10)}
-              onChange={(e) => updateBillDraft({ 
-                dueDate: e.target.value ? new Date(e.target.value) : new Date() 
-              })}
+              onChange={(e) => updateBillDraft('dueDate', e.target.value ? new Date(e.target.value) : new Date())}
               required
               className="w-full p-2 border border-gray-300 rounded"
             />
@@ -224,7 +222,7 @@ export default function BillForm({ billId, isEdit = false }: BillFormProps) {
               id="description"
               name="description"
               value={billDraft.description}
-              onChange={(e) => updateBillDraft({ description: e.target.value })}
+              onChange={(e) => updateBillDraft('description', e.target.value)}
               required
               className="w-full p-2 border border-gray-300 rounded"
             />
@@ -238,8 +236,8 @@ export default function BillForm({ billId, isEdit = false }: BillFormProps) {
               type="text"
               id="reference"
               name="reference"
-              value={billDraft.reference}
-              onChange={(e) => updateBillDraft({ reference: e.target.value })}
+              value={billDraft.referenceNumber}
+              onChange={(e) => updateBillDraft('referenceNumber', e.target.value)}
               className="w-full p-2 border border-gray-300 rounded"
             />
           </div>

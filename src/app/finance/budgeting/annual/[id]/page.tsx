@@ -23,6 +23,7 @@ export default function BudgetDetailPage({ params }: BudgetDetailPageProps) {
     budgetError,
     fetchBudgetById,
     updateBudgetStatus,
+    updateBudget,
   } = useFinanceStore();
   
   const [showStatusModal, setShowStatusModal] = useState(false);
@@ -54,9 +55,14 @@ export default function BudgetDetailPage({ params }: BudgetDetailPageProps) {
   };
   
   // Format date
-  const formatDate = (dateString: string) => {
-    if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleDateString();
+  const formatDate = (dateInput: string | Date) => {
+    if (!dateInput) return 'N/A';
+    
+    const date = dateInput instanceof Date 
+      ? dateInput 
+      : new Date(dateInput);
+      
+    return date.toLocaleDateString();
   };
   
   // Format currency
@@ -81,7 +87,13 @@ export default function BudgetDetailPage({ params }: BudgetDetailPageProps) {
     setIsSubmitting(true);
     
     try {
-      await updateBudgetStatus(budgetId, newStatus, statusReason);
+      // Update the budget status first, then apply any additional updates if needed
+      await updateBudgetStatus(budgetId, newStatus);
+      
+      // If we need to store the status reason, we could update the budget with notes
+      if (statusReason) {
+        await updateBudget(budgetId, { notes: statusReason });
+      }
       setShowStatusModal(false);
       setStatusReason('');
     } catch (error) {
@@ -149,7 +161,7 @@ export default function BudgetDetailPage({ params }: BudgetDetailPageProps) {
           <div>
             <h1 className="text-2xl font-semibold text-gray-900">{selectedBudget.name}</h1>
             <p className="text-sm text-gray-500">
-              Fiscal Year: {selectedBudget.fiscalYear?.name || selectedBudget.fiscalYearId}
+              Fiscal Year: {selectedBudget.fiscalYearId}
             </p>
           </div>
           <div className="flex space-x-3">

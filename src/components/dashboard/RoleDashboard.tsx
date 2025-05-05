@@ -27,14 +27,18 @@ export default function RoleDashboard({
   // Render different dashboard layouts based on user role
   const renderDashboardByRole = () => {
     switch(userRole) {
-      case UserRole.ADMINISTRATOR:
+      case 'ADMIN':
+      case UserRole.ADMIN:
         return renderAdministratorDashboard();
+      case 'ACCOUNTANT':
       case UserRole.ACCOUNTANT:
         return renderAccountantDashboard();
+      case 'MANAGER':
       case UserRole.MANAGER:
         return renderManagerDashboard();
-      case UserRole.PROVIDER:
+      case 'PROVIDER':
         return renderProviderDashboard();
+      case 'READONLY':
       case UserRole.READONLY:
       default:
         return renderReadOnlyDashboard();

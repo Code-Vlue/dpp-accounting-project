@@ -125,7 +125,7 @@ export default function DataImportExportPanel({
         options: importOptions
       };
 
-      const result = await validateImport(importFile, config);
+      const result = await validateImport(importFile, config.target, config.format);
       setValidationResult(result);
     } catch (error) {
       console.error('Error validating import:', error);
@@ -146,15 +146,15 @@ export default function DataImportExportPanel({
         options: importOptions
       };
 
-      const result = await importData(importFile, config);
+      await importData(importFile, config);
       
-      if (result.success) {
-        setImportSuccess(true);
-        setImportFile(null);
-        
-        if (onImportComplete) {
-          onImportComplete();
-        }
+      // Since importData doesn't return a result, we'll assume it was successful
+      // if no error was thrown
+      setImportSuccess(true);
+      setImportFile(null);
+      
+      if (onImportComplete) {
+        onImportComplete();
       }
     } catch (error) {
       console.error('Error importing data:', error);
@@ -173,18 +173,19 @@ export default function DataImportExportPanel({
         filters: exportFilters
       };
 
-      const result = await exportData(config);
-      
-      if (result.success) {
-        setExportSuccess(true);
+      try {
+        await exportData(config);
         
-        // In a real implementation, this would trigger a file download
-        // For now, just log the file URL
-        console.log(`File exported to: ${result.fileUrl}`);
+        // Since exportData might automatically trigger a download via a link click in the store
+        // we'll just assume it was successful if no error was thrown
+        setExportSuccess(true);
         
         if (onExportComplete) {
           onExportComplete();
         }
+      } catch (error) {
+        // Error already handled in the store
+        console.error('Error exporting data:', error);
       }
     } catch (error) {
       console.error('Error exporting data:', error);

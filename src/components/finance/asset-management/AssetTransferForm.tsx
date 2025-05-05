@@ -3,7 +3,19 @@
 // src/components/finance/asset-management/AssetTransferForm.tsx
 import React, { useState } from 'react';
 import { useFinanceStore } from '@/store/finance-store';
-import { AssetTransfer, Department, User } from '@/types/finance';
+import { AssetTransfer, Department } from '@/types/finance';
+
+// Define simple interfaces for entities not in the finance types
+interface User {
+  id: string;
+  name: string;
+  email: string;
+}
+
+interface Location {
+  id: string;
+  name: string;
+}
 
 interface AssetTransferFormProps {
   assetId: string;
@@ -17,30 +29,86 @@ export function AssetTransferForm({
   onCancel
 }: AssetTransferFormProps) {
   const { getAssetById, transferAsset } = useFinanceStore();
-  const asset = getAssetById(assetId);
+  const [asset, setAsset] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   
+  // Initialize form data with default values
   const [formData, setFormData] = useState<Partial<AssetTransfer>>({
     assetId,
-    transferDate: new Date().toISOString().split('T')[0],
-    fromDepartmentId: asset?.departmentId || '',
-    toDepartmentId: '',
-    fromLocationId: asset?.locationId || '',
-    toLocationId: '',
-    fromCustodianId: asset?.custodianId || '',
-    toCustodianId: '',
+    transferDate: new Date(),
+    previousDepartment: '',
+    newDepartment: '',
+    previousLocation: '',
+    newLocation: '',
+    previousAssignee: '',
+    newAssignee: '',
     reason: '',
     notes: ''
   });
   
+  // Fetch asset data when component mounts
+  React.useEffect(() => {
+    const fetchAsset = async () => {
+      try {
+        const assetData = await getAssetById(assetId);
+        setAsset(assetData);
+        
+        // Update form data with asset information
+        if (assetData) {
+          setFormData(prev => ({
+            ...prev,
+            previousDepartment: assetData.department || '',
+            previousLocation: assetData.location || '',
+            previousAssignee: assetData.assignedTo || '',
+          }));
+        }
+      } catch (error) {
+        console.error('Error fetching asset:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchAsset();
+  }, [assetId, getAssetById]);
+  
   // Mock data for demonstration
   const departments: Department[] = [
-    { id: 'dept1', name: 'Finance' },
-    { id: 'dept2', name: 'Operations' },
-    { id: 'dept3', name: 'Administration' },
-    { id: 'dept4', name: 'IT' }
+    { 
+      id: 'dept1', 
+      name: 'Finance', 
+      code: 'FIN',
+      isActive: true,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    },
+    { 
+      id: 'dept2', 
+      name: 'Operations',
+      code: 'OPS',
+      isActive: true,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    },
+    { 
+      id: 'dept3', 
+      name: 'Administration',
+      code: 'ADM',
+      isActive: true,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    },
+    { 
+      id: 'dept4', 
+      name: 'IT',
+      code: 'IT',
+      isActive: true,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }
   ];
   
-  const locations = [
+  const locations: Location[] = [
     { id: 'loc1', name: 'Main Office' },
     { id: 'loc2', name: 'Satellite Office' },
     { id: 'loc3', name: 'Remote Location' }
@@ -62,16 +130,20 @@ export function AssetTransferForm({
       newErrors.transferDate = 'Transfer date is required';
     }
     
-    if (!formData.toDepartmentId) {
-      newErrors.toDepartmentId = 'Destination department is required';
+    if (!formData.newDepartment) {
+      newErrors.newDepartment = 'Destination department is required';
     }
     
-    if (!formData.toLocationId) {
-      newErrors.toLocationId = 'Destination location is required';
+    if (!formData.newLocation) {
+      newErrors.newLocation = 'Destination location is required';
     }
     
-    if (!formData.toCustodianId) {
-      newErrors.toCustodianId = 'New custodian is required';
+    if (!formData.newAssignee) {
+      newErrors.newAssignee = 'New custodian is required';
+    }
+    
+    if (!formData.reason) {
+      newErrors.reason = 'Reason for transfer is required';
     }
     
     setErrors(newErrors);
@@ -84,6 +156,19 @@ export function AssetTransferForm({
     setFormData(prev => ({
       ...prev,
       [name]: value
+    }));
+    
+    // Clear error when field is changed
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    }
+  };
+  
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value ? new Date(value) : undefined
     }));
     
     // Clear error when field is changed
@@ -118,6 +203,14 @@ export function AssetTransferForm({
     }
   };
   
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12"></div>
+      </div>
+    );
+  }
+  
   if (!asset) {
     return (
       <div className="bg-red-50 text-red-700 p-4 rounded-md">
@@ -135,11 +228,11 @@ export function AssetTransferForm({
         
         <div className="p-4 mb-6 bg-blue-50 text-blue-800 rounded-md">
           <h3 className="font-medium">Asset Information</h3>
-          <p>Tag: {asset.assetTag}</p>
-          <p>Serial Number: {asset.serialNumber}</p>
-          <p>Current Location: {asset.location?.name || 'Unknown'}</p>
-          <p>Current Department: {asset.department?.name || 'Unknown'}</p>
-          <p>Current Custodian: {asset.custodian?.name || 'Unknown'}</p>
+          <p>Tag: {asset.assetNumber}</p>
+          <p>Serial Number: {asset.serialNumber || 'N/A'}</p>
+          <p>Current Location: {asset.location || 'Unknown'}</p>
+          <p>Current Department: {asset.department || 'Unknown'}</p>
+          <p>Current Custodian: {asset.assignedTo || 'Unknown'}</p>
         </div>
         
         {errors.submit && (
@@ -157,8 +250,8 @@ export function AssetTransferForm({
               type="date"
               id="transferDate"
               name="transferDate"
-              value={formData.transferDate || ''}
-              onChange={handleChange}
+              value={formData.transferDate ? new Date(formData.transferDate).toISOString().split('T')[0] : ''}
+              onChange={handleDateChange}
               className={`mt-1 block w-full rounded-md border ${errors.transferDate ? 'border-red-500' : 'border-gray-300'} shadow-sm px-3 py-2`}
             />
             {errors.transferDate && (
@@ -167,65 +260,65 @@ export function AssetTransferForm({
           </div>
           
           <div className="space-y-2">
-            <label htmlFor="toDepartmentId" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="newDepartment" className="block text-sm font-medium text-gray-700">
               New Department *
             </label>
             <select
-              id="toDepartmentId"
-              name="toDepartmentId"
-              value={formData.toDepartmentId || ''}
+              id="newDepartment"
+              name="newDepartment"
+              value={formData.newDepartment || ''}
               onChange={handleChange}
-              className={`mt-1 block w-full rounded-md border ${errors.toDepartmentId ? 'border-red-500' : 'border-gray-300'} shadow-sm px-3 py-2`}
+              className={`mt-1 block w-full rounded-md border ${errors.newDepartment ? 'border-red-500' : 'border-gray-300'} shadow-sm px-3 py-2`}
             >
               <option value="">Select Department</option>
               {departments.map(dept => (
-                <option key={dept.id} value={dept.id}>{dept.name}</option>
+                <option key={dept.id} value={dept.name}>{dept.name}</option>
               ))}
             </select>
-            {errors.toDepartmentId && (
-              <p className="mt-1 text-sm text-red-600">{errors.toDepartmentId}</p>
+            {errors.newDepartment && (
+              <p className="mt-1 text-sm text-red-600">{errors.newDepartment}</p>
             )}
           </div>
           
           <div className="space-y-2">
-            <label htmlFor="toLocationId" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="newLocation" className="block text-sm font-medium text-gray-700">
               New Location *
             </label>
             <select
-              id="toLocationId"
-              name="toLocationId"
-              value={formData.toLocationId || ''}
+              id="newLocation"
+              name="newLocation"
+              value={formData.newLocation || ''}
               onChange={handleChange}
-              className={`mt-1 block w-full rounded-md border ${errors.toLocationId ? 'border-red-500' : 'border-gray-300'} shadow-sm px-3 py-2`}
+              className={`mt-1 block w-full rounded-md border ${errors.newLocation ? 'border-red-500' : 'border-gray-300'} shadow-sm px-3 py-2`}
             >
               <option value="">Select Location</option>
               {locations.map(loc => (
-                <option key={loc.id} value={loc.id}>{loc.name}</option>
+                <option key={loc.id} value={loc.name}>{loc.name}</option>
               ))}
             </select>
-            {errors.toLocationId && (
-              <p className="mt-1 text-sm text-red-600">{errors.toLocationId}</p>
+            {errors.newLocation && (
+              <p className="mt-1 text-sm text-red-600">{errors.newLocation}</p>
             )}
           </div>
           
           <div className="space-y-2">
-            <label htmlFor="toCustodianId" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="newAssignee" className="block text-sm font-medium text-gray-700">
               New Custodian *
             </label>
             <select
-              id="toCustodianId"
-              name="toCustodianId"
-              value={formData.toCustodianId || ''}
+              id="newAssignee"
+              name="newAssignee"
+              value={formData.newAssignee || ''}
               onChange={handleChange}
-              className={`mt-1 block w-full rounded-md border ${errors.toCustodianId ? 'border-red-500' : 'border-gray-300'} shadow-sm px-3 py-2`}
+              className={`mt-1 block w-full rounded-md border ${errors.newAssignee ? 'border-red-500' : 'border-gray-300'} shadow-sm px-3 py-2`}
             >
               <option value="">Select Custodian</option>
               {users.map(user => (
-                <option key={user.id} value={user.id}>{user.name}</option>
+                <option key={user.id} value={user.name}>{user.name}</option>
               ))}
             </select>
-            {errors.toCustodianId && (
-              <p className="mt-1 text-sm text-red-600">{errors.toCustodianId}</p>
+            {errors.newAssignee && (
+              <p className="mt-1 text-sm text-red-600">{errors.newAssignee}</p>
             )}
           </div>
           

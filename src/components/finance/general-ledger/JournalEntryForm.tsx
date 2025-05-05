@@ -69,7 +69,7 @@ export default function JournalEntryForm() {
 
   // Handle date change
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    updateJournalEntryDraft({ date: new Date(e.target.value) });
+    updateJournalEntryDraft('date', new Date(e.target.value));
     
     // Clear validation error if it exists
     if (validationErrors.date) {
@@ -79,7 +79,7 @@ export default function JournalEntryForm() {
 
   // Handle description change
   const handleDescriptionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    updateJournalEntryDraft({ description: e.target.value });
+    updateJournalEntryDraft('description', e.target.value);
     
     // Clear validation error if it exists
     if (validationErrors.description) {
@@ -89,7 +89,7 @@ export default function JournalEntryForm() {
 
   // Handle reference change
   const handleReferenceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    updateJournalEntryDraft({ reference: e.target.value });
+    updateJournalEntryDraft('reference', e.target.value);
     
     // Clear validation error if it exists
     if (validationErrors.reference) {

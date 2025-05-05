@@ -22,7 +22,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ invoiceId }) => {
   const router = useRouter();
   const {
     customers,
-    fetchAllCustomers,
+    fetchCustomers,
     fetchInvoiceById,
     selectedInvoice,
     invoicesLoading,
@@ -69,8 +69,8 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ invoiceId }) => {
     }
     
     // Load customers
-    fetchAllCustomers();
-  }, [invoiceId, fetchAllCustomers]);
+    fetchCustomers();
+  }, [invoiceId, fetchCustomers]);
 
   // Load invoice data if editing
   useEffect(() => {
@@ -232,6 +232,10 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ invoiceId }) => {
           createdById: 'current-user', // This would come from auth context
           subtotal,
           invoiceItems: invoiceItems as InvoiceItem[],
+          // Add missing required properties
+          entries: [], // Transaction entries will be empty initially
+          createdAt: new Date(),
+          updatedAt: new Date()
         });
       }
       

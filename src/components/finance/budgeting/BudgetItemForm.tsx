@@ -39,7 +39,7 @@ export default function BudgetItemForm({ budgetId, itemId }: BudgetItemFormProps
     
     // If we're editing an existing item, fetch it
     if (itemId) {
-      fetchBudgetItemById(budgetId, itemId);
+      fetchBudgetItemById(itemId);
     }
   }, [budgetId, itemId, fetchBudgetById, fetchChartOfAccounts, fetchBudgetItemById]);
   
@@ -217,10 +217,10 @@ export default function BudgetItemForm({ budgetId, itemId }: BudgetItemFormProps
     try {
       if (itemId) {
         // Update existing budget item
-        await updateBudgetItem(budgetId, itemId, periodValues);
+        await updateBudgetItem(itemId, { ...budgetItemDraft, periodDistribution: periodValues });
       } else {
         // Create new budget item
-        await createBudgetItem(budgetId, periodValues);
+        await createBudgetItem({ ...budgetItemDraft, budgetId, periodDistribution: periodValues });
       }
       
       // Redirect back to budget detail page

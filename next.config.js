@@ -5,17 +5,16 @@ const nextConfig = {
   images: {
     domains: [],
   },
+  // Disable ignoreBuildErrors to enforce TypeScript type checking
   typescript: {
-    // !! WARN !!
-    // Ignoring TypeScript errors for now, to be fixed in production
-    // This is temporary to allow building despite TypeScript errors
-    ignoreBuildErrors: true,
+    // Comment out ignoreBuildErrors to enforce TypeScript type checking
+    // ignoreBuildErrors: true,
   },
   // Ignore errors related to useSearchParams and Suspense boundaries
   experimental: {
     missingSuspenseWithCSRBailout: false,
   },
-  // Skip building of auth pages for now
+  // Output mode for deployment
   output: 'standalone',
 };
 

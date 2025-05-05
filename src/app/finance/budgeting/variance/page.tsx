@@ -214,7 +214,7 @@ export default function BudgetVariancePage() {
                     <option value="">Select Budget</option>
                     {budgets.map(budget => (
                       <option key={budget.id} value={budget.id}>
-                        {budget.name} ({budget.fiscalYear?.name || budget.fiscalYearId})
+                        {budget.name} ({budget.fiscalYearId})
                       </option>
                     ))}
                   </select>
@@ -305,7 +305,7 @@ export default function BudgetVariancePage() {
               <div>
                 <h3 className="text-lg leading-6 font-medium text-gray-900">Budget vs. Actual</h3>
                 <p className="mt-1 max-w-2xl text-sm text-gray-500">
-                  {selectedBudget.name} ({selectedBudget.fiscalYear?.name || selectedBudget.fiscalYearId})
+                  {selectedBudget.name} ({selectedBudget.fiscalYearId})
                   {selectedPeriod !== 'all' && selectedPeriod !== 'ytd' && ` - ${periodLabels[parseInt(selectedPeriod)]}`}
                   {selectedPeriod === 'ytd' && ' - Year to Date'}
                 </p>

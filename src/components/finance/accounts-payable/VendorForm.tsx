@@ -22,6 +22,16 @@ export default function VendorForm({ vendorId, isEdit = false }: VendorFormProps
     updateVendor 
   } = useFinanceStore();
   
+  // Create a default address that matches the Address interface
+  const defaultAddress: Address = {
+    street1: '',
+    city: '',
+    state: '',
+    zipCode: '',
+    country: 'USA'
+    // street2 is optional, so we don't need to include it
+  };
+
   const [formData, setFormData] = useState({
     name: '',
     vendorNumber: '',
@@ -30,14 +40,7 @@ export default function VendorForm({ vendorId, isEdit = false }: VendorFormProps
     contactName: '',
     email: '',
     phone: '',
-    address: {
-      street1: '',
-      street2: '',
-      city: '',
-      state: '',
-      zipCode: '',
-      country: 'USA'
-    },
+    address: defaultAddress,
     paymentTerms: 'Net 30',
     defaultAccountId: '',
     taxIdentification: '',
@@ -69,14 +72,7 @@ export default function VendorForm({ vendorId, isEdit = false }: VendorFormProps
         contactName: selectedVendor.contactName || '',
         email: selectedVendor.email || '',
         phone: selectedVendor.phone || '',
-        address: selectedVendor.address || {
-          street1: '',
-          street2: '',
-          city: '',
-          state: '',
-          zipCode: '',
-          country: 'USA'
-        },
+        address: selectedVendor.address || defaultAddress,
         paymentTerms: selectedVendor.paymentTerms || 'Net 30',
         defaultAccountId: selectedVendor.defaultAccountId || '',
         taxIdentification: selectedVendor.taxIdentification || '',

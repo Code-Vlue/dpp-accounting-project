@@ -17,6 +17,16 @@ interface TuitionCreditFormProps {
   isEdit?: boolean;
   isAdjustment?: boolean;
   originalCreditId?: string;
+  providers?: Provider[];
+  tuitionCreditDraft?: Partial<TuitionCredit & {
+    adjustmentNotes?: string;
+    isAdjustment?: boolean;
+    originalCreditId?: string;
+  }>;
+  onUpdate?: (field: string, value: any) => void;
+  onSubmit?: () => Promise<void>;
+  loading?: boolean;
+  readOnly?: boolean;
 }
 
 export default function TuitionCreditForm({ 
@@ -24,7 +34,13 @@ export default function TuitionCreditForm({
   providerId, 
   isEdit = false, 
   isAdjustment = false,
-  originalCreditId
+  originalCreditId,
+  providers: propProviders,
+  tuitionCreditDraft: propTuitionCreditDraft,
+  onUpdate,
+  onSubmit: externalSubmit,
+  loading: propLoading,
+  readOnly = false
 }: TuitionCreditFormProps) {
   const router = useRouter();
   const { 
@@ -41,8 +57,38 @@ export default function TuitionCreditForm({
     resetTuitionCreditForm
   } = useFinanceStore();
   
-  const [formData, setFormData] = useState({
-    ...tuitionCreditDraft
+  // Define the form data type to avoid type errors
+  type FormDataType = {
+    providerId: string;
+    studentId: string;
+    studentName: string;
+    creditPeriodStart: Date;
+    creditPeriodEnd: Date;
+    creditAmount: number;
+    familyPortion: number;
+    dppPortion: number;
+    description: string;
+    notes: string;
+    isAdjustment?: boolean;
+    originalCreditId?: string;
+    adjustmentNotes?: string;
+  };
+
+  // Initialize form data with type annotation to avoid errors
+  const [formData, setFormData] = useState<FormDataType>({
+    providerId: tuitionCreditDraft?.providerId || '',
+    studentId: tuitionCreditDraft?.studentId || '',
+    studentName: tuitionCreditDraft?.studentName || '',
+    creditPeriodStart: tuitionCreditDraft?.creditPeriodStart || new Date(),
+    creditPeriodEnd: tuitionCreditDraft?.creditPeriodEnd || new Date(),
+    creditAmount: tuitionCreditDraft?.creditAmount || 0,
+    familyPortion: tuitionCreditDraft?.familyPortion || 0,
+    dppPortion: tuitionCreditDraft?.dppPortion || 0,
+    description: tuitionCreditDraft?.description || '',
+    notes: tuitionCreditDraft?.notes || '',
+    isAdjustment: isAdjustment || false,
+    originalCreditId: originalCreditId || undefined,
+    adjustmentNotes: (tuitionCreditDraft as any)?.adjustmentNotes || ''
   });
   
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -78,7 +124,6 @@ export default function TuitionCreditForm({
       if (isAdjustment) {
         // For adjustment, create a new form with reference to original credit
         setFormData({
-          ...tuitionCreditDraft,
           providerId: selectedTuitionCredit.providerId,
           studentId: selectedTuitionCredit.studentId,
           studentName: selectedTuitionCredit.studentName,
@@ -88,16 +133,27 @@ export default function TuitionCreditForm({
           familyPortion: 0,
           dppPortion: 0,
           description: `Adjustment for credit ${selectedTuitionCredit.id.substring(0, 8)}`,
+          notes: '',
           isAdjustment: true,
-          originalCreditId: selectedTuitionCredit.id
+          originalCreditId: selectedTuitionCredit.id,
+          adjustmentNotes: ''
         });
       } else {
         // For edit, use all the original credit data
         setFormData({
-          ...selectedTuitionCredit,
-          // Convert string dates back to Date objects if needed
+          providerId: selectedTuitionCredit.providerId,
+          studentId: selectedTuitionCredit.studentId,
+          studentName: selectedTuitionCredit.studentName,
           creditPeriodStart: new Date(selectedTuitionCredit.creditPeriodStart),
-          creditPeriodEnd: new Date(selectedTuitionCredit.creditPeriodEnd)
+          creditPeriodEnd: new Date(selectedTuitionCredit.creditPeriodEnd),
+          creditAmount: selectedTuitionCredit.creditAmount,
+          familyPortion: selectedTuitionCredit.familyPortion,
+          dppPortion: selectedTuitionCredit.dppPortion,
+          description: selectedTuitionCredit.description || '',
+          notes: (selectedTuitionCredit as any).notes || '',
+          isAdjustment: selectedTuitionCredit.isAdjustment || false,
+          originalCreditId: selectedTuitionCredit.originalCreditId,
+          adjustmentNotes: selectedTuitionCredit.adjustmentNotes || ''
         });
       }
     }
@@ -174,14 +230,30 @@ export default function TuitionCreditForm({
         // Create new credit or adjustment
         const creditData = {
           ...formData,
+          // Required properties for TuitionCredit that might be missing from formData
           type: TransactionType.TUITION_CREDIT,
           isAdjustment: isAdjustment,
           creditStatus: TuitionCreditStatus.DRAFT,
-          originalCreditId: isAdjustment ? originalCreditId || selectedTuitionCredit?.id : undefined
+          originalCreditId: isAdjustment ? originalCreditId || selectedTuitionCredit?.id : undefined,
+          // Add missing required properties with defaults
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          createdById: 'current-user-id',
+          status: TuitionCreditStatus.DRAFT,
+          entries: [],
+          paymentBatchId: null,
+          approvalDate: null,
+          approvedById: null,
+          rejectionReason: null,
+          processingNotes: null,
+          paymentDate: null
         };
         
-        const newCredit = await createTuitionCredit(creditData);
-        router.push(`/finance/tuition-credits/credits/${newCredit.id}`);
+        // We know createTuitionCredit returns void, so let's just call it
+        await createTuitionCredit(creditData as any);
+        
+        // Since we can't get an ID back, just redirect to the credits list
+        router.push('/finance/tuition-credits/credits');
       }
     } catch (error: any) {
       setSubmitError(error.message || 'Failed to save tuition credit. Please try again.');

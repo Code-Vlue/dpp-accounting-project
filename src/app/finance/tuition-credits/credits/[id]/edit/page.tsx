@@ -38,18 +38,23 @@ export default function EditTuitionCreditPage({ params }: { params: { id: string
       // Initialize the draft with the selected credit data
       resetTuitionCreditDraft();
       
-      updateTuitionCreditDraft({
-        providerId: selectedTuitionCredit.providerId,
-        studentId: selectedTuitionCredit.studentId,
-        studentName: selectedTuitionCredit.studentName,
-        creditPeriodStart: selectedTuitionCredit.creditPeriodStart,
-        creditPeriodEnd: selectedTuitionCredit.creditPeriodEnd,
-        creditAmount: selectedTuitionCredit.creditAmount,
-        familyPortion: selectedTuitionCredit.familyPortion,
-        dppPortion: selectedTuitionCredit.dppPortion,
-        accountId: selectedTuitionCredit.accountId,
-        description: selectedTuitionCredit.description,
-        reference: selectedTuitionCredit.reference || '',
+      // Update each field individually to match the function signature
+      const fields = [
+        { name: 'providerId', value: selectedTuitionCredit.providerId },
+        { name: 'studentId', value: selectedTuitionCredit.studentId },
+        { name: 'studentName', value: selectedTuitionCredit.studentName },
+        { name: 'creditPeriodStart', value: selectedTuitionCredit.creditPeriodStart },
+        { name: 'creditPeriodEnd', value: selectedTuitionCredit.creditPeriodEnd },
+        { name: 'creditAmount', value: selectedTuitionCredit.creditAmount },
+        { name: 'familyPortion', value: selectedTuitionCredit.familyPortion },
+        { name: 'dppPortion', value: selectedTuitionCredit.dppPortion },
+        { name: 'description', value: selectedTuitionCredit.description },
+        { name: 'notes', value: selectedTuitionCredit.reference || '' }
+      ];
+      
+      // Update each field
+      fields.forEach(field => {
+        updateTuitionCreditDraft(field.name, field.value);
       });
     }
   }, [selectedTuitionCredit, resetTuitionCreditDraft, updateTuitionCreditDraft]);
@@ -66,9 +71,9 @@ export default function EditTuitionCreditPage({ params }: { params: { id: string
           creditAmount: tuitionCreditDraft.creditAmount,
           familyPortion: tuitionCreditDraft.familyPortion,
           dppPortion: tuitionCreditDraft.dppPortion,
-          accountId: tuitionCreditDraft.accountId,
           description: tuitionCreditDraft.description,
-          reference: tuitionCreditDraft.reference,
+          // Use notes to update the reference field in the backend
+          reference: tuitionCreditDraft.notes,
         });
         router.push(`/finance/tuition-credits/credits/${creditId}`);
       }

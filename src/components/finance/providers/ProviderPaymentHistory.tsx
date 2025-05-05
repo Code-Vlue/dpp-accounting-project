@@ -136,6 +136,11 @@ export function ProviderPaymentHistory({
     );
   };
   
+  // Format currency with $ sign and 2 decimal places
+  const formatCurrency = (amount: number): string => {
+    return `$${amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`;
+  };
+  
   if (paymentsLoading || tuitionCreditsLoading) {
     return <div className="p-4 text-center">Loading payment history...</div>;
   }
@@ -159,18 +164,18 @@ export function ProviderPaymentHistory({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="border rounded-lg p-4">
           <div className="text-sm text-gray-500">Total Received</div>
-          <div className="text-2xl font-bold">${paymentMetrics.totalAmountPaid.toLocaleString()}</div>
+          <div className="text-2xl font-bold">{formatCurrency(paymentMetrics.totalAmountPaid)}</div>
           <div className="text-xs text-gray-500">From {paymentMetrics.totalPayments} payments</div>
         </div>
         
         <div className="border rounded-lg p-4">
           <div className="text-sm text-gray-500">Pending</div>
-          <div className="text-2xl font-bold">${paymentMetrics.pendingAmount.toLocaleString()}</div>
+          <div className="text-2xl font-bold">{formatCurrency(paymentMetrics.pendingAmount)}</div>
         </div>
         
         <div className="border rounded-lg p-4">
           <div className="text-sm text-gray-500">Year to Date</div>
-          <div className="text-2xl font-bold">${paymentMetrics.yearToDatePayments.toLocaleString()}</div>
+          <div className="text-2xl font-bold">{formatCurrency(paymentMetrics.yearToDatePayments)}</div>
           <div className="text-xs text-gray-500">For {new Date().getFullYear()}</div>
         </div>
       </div>
@@ -268,7 +273,7 @@ export function ProviderPaymentHistory({
                       {payment.method}
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      ${payment.amount.toLocaleString()}
+                      {formatCurrency(payment.amount)}
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                       {paymentCredits.length > 0 ? (

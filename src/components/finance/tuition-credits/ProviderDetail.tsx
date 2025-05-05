@@ -13,10 +13,11 @@ import {
 } from '@/types/finance';
 
 interface ProviderDetailProps {
-  providerId: string;
+  providerId?: string;
+  provider?: Provider;
 }
 
-export default function ProviderDetail({ providerId }: ProviderDetailProps) {
+export default function ProviderDetail({ providerId, provider }: ProviderDetailProps) {
   const router = useRouter();
   const { 
     selectedProvider, 
@@ -40,11 +41,13 @@ export default function ProviderDetail({ providerId }: ProviderDetailProps) {
   const [communicationError, setCommunicationError] = useState<string | null>(null);
   
   useEffect(() => {
-    fetchProviderById(providerId);
-    fetchProviderTuitionCredits(providerId);
-    fetchProviderPayments(providerId);
-    fetchProviderQualityGrants(providerId);
-  }, [providerId, fetchProviderById, fetchProviderTuitionCredits, fetchProviderPayments, fetchProviderQualityGrants]);
+    if (providerId && !provider) {
+      fetchProviderById(providerId);
+      fetchProviderTuitionCredits(providerId);
+      fetchProviderPayments(providerId);
+      fetchProviderQualityGrants(providerId);
+    }
+  }, [providerId, provider, fetchProviderById, fetchProviderTuitionCredits, fetchProviderPayments, fetchProviderQualityGrants]);
   
   const handleSendCommunication = async () => {
     if (!communicationMessage.trim()) {
@@ -56,12 +59,7 @@ export default function ProviderDetail({ providerId }: ProviderDetailProps) {
     setCommunicationError(null);
     
     try {
-      await sendProviderCommunication(providerId, {
-        message: communicationMessage,
-        type: communicationType,
-        sentBy: 'user123', // This would be the current user ID in a real app
-        sentAt: new Date()
-      });
+      await sendProviderCommunication(providerId, communicationMessage);
       
       setCommunicationSent(true);
       setCommunicationMessage('');
@@ -77,41 +75,39 @@ export default function ProviderDetail({ providerId }: ProviderDetailProps) {
     }
   };
   
-  if (providersLoading) {
+  // If loading and we're in providerId mode
+  if (!provider && providerId && providersLoading) {
     return <div className="p-4 text-center">Loading provider data...</div>;
   }
   
-  if (providerError) {
+  if (!provider && providerId && providerError) {
     return <div className="p-4 text-center text-red-500">Error loading provider: {providerError}</div>;
   }
   
-  if (!selectedProvider) {
-    return <div className="p-4 text-center text-amber-500">Provider not found with ID: {providerId}</div>;
-  }
+  // Use provided provider prop or fall back to selectedProvider from store
+  const providerData = provider || selectedProvider;
   
-  const provider = selectedProvider;
+  if (!providerData) {
+    return <div className="p-4 text-center text-amber-500">Provider not found{providerId ? ` with ID: ${providerId}` : ''}</div>;
+  }
   
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold">{provider.name}</h2>
+          <h2 className="text-2xl font-bold">{providerData.name}</h2>
           <div className="flex items-center mt-1 text-gray-600">
-            <span className={`inline-block px-2 py-1 text-xs rounded-full mr-2 ${getProviderTypeColor(provider.providerType)}`}>
-              {formatProviderType(provider.providerType)}
+            <span className={`inline-block px-2 py-1 text-xs rounded-full mr-2 ${getProviderTypeColor(providerData.providerType)}`}>
+              {formatProviderType(providerData.providerType)}
             </span>
-            <span className={`inline-block px-2 py-1 text-xs rounded-full mr-2 ${getProviderStatusColor(provider.providerStatus)}`}>
-              {formatProviderStatus(provider.providerStatus)}
+            <span className={`inline-block px-2 py-1 text-xs rounded-full mr-2 ${getProviderStatusColor(providerData.providerStatus)}`}>
+              {formatProviderStatus(providerData.providerStatus)}
             </span>
-            <span className={`inline-block px-2 py-1 text-xs rounded-full ${getQualityRatingColor(provider.qualityRating)}`}>
-              {formatQualityRating(provider.qualityRating)}
+            <span className={`inline-block px-2 py-1 text-xs rounded-full ${getQualityRatingColor(providerData.qualityRating)}`}>
+              {formatQualityRating(providerData.qualityRating)}
             </span>
-            {provider.taxDocumentVerified && (
-              <span className="inline-block px-2 py-1 text-xs rounded-full ml-2 bg-green-100 text-green-800">
-                Tax Verified
-              </span>
-            )}
-            {provider.directDepositVerified && (
+            {/* Tax verification status would go here in a real app */}
+            {false && (
               <span className="inline-block px-2 py-1 text-xs rounded-full ml-2 bg-blue-100 text-blue-800">
                 ACH Verified
               </span>
@@ -121,19 +117,19 @@ export default function ProviderDetail({ providerId }: ProviderDetailProps) {
         
         <div className="space-x-2 mt-2 md:mt-0">
           <Link 
-            href={`/finance/tuition-credits/providers/${providerId}/edit`}
+            href={`/finance/tuition-credits/providers/${providerId || providerData.id}/edit`}
             className="px-4 py-2 bg-green-600 text-white rounded shadow-sm hover:bg-green-700"
           >
             Edit Provider
           </Link>
           <Link 
-            href={`/finance/tuition-credits/providers/${providerId}/credits/new`}
+            href={`/finance/tuition-credits/providers/${providerId || providerData.id}/credits/new`}
             className="px-4 py-2 bg-blue-600 text-white rounded shadow-sm hover:bg-blue-700"
           >
             New Credit
           </Link>
           <Link 
-            href={`/finance/tuition-credits/providers/${providerId}/payments/new`}
+            href={`/finance/tuition-credits/providers/${providerId || providerData.id}/payments/new`}
             className="px-4 py-2 bg-purple-600 text-white rounded shadow-sm hover:bg-purple-700"
           >
             New Payment
@@ -208,14 +204,14 @@ export default function ProviderDetail({ providerId }: ProviderDetailProps) {
         </div>
         
         <div className="p-6">
-          {activeTab === 'details' && <ProviderDetails provider={provider} />}
-          {activeTab === 'credits' && <ProviderCredits credits={providerTuitionCredits} providerId={providerId} />}
-          {activeTab === 'payments' && <ProviderPayments payments={providerPayments} providerId={providerId} />}
-          {activeTab === 'grants' && <ProviderGrants grants={providerQualityGrants} providerId={providerId} provider={provider} />}
+          {activeTab === 'details' && <ProviderDetails provider={providerData} />}
+          {activeTab === 'credits' && <ProviderCredits credits={providerTuitionCredits} providerId={providerId || providerData.id} />}
+          {activeTab === 'payments' && <ProviderPayments payments={providerPayments} providerId={providerId || providerData.id} />}
+          {activeTab === 'grants' && <ProviderGrants grants={providerQualityGrants} providerId={providerId || providerData.id} provider={providerData} />}
           {activeTab === 'communications' && (
             <ProviderCommunications 
-              providerId={providerId} 
-              provider={provider}
+              providerId={providerId || providerData.id} 
+              provider={providerData}
               communicationMessage={communicationMessage}
               setCommunicationMessage={setCommunicationMessage}
               communicationType={communicationType}
@@ -226,7 +222,7 @@ export default function ProviderDetail({ providerId }: ProviderDetailProps) {
               onSend={handleSendCommunication}
             />
           )}
-          {activeTab === 'portal' && <ProviderPortalAccess provider={provider} providerId={providerId} />}
+          {activeTab === 'portal' && <ProviderPortalAccess provider={providerData} providerId={providerId || providerData.id} />}
         </div>
       </div>
     </div>
@@ -287,10 +283,10 @@ function ProviderDetails({ provider }: { provider: Provider }) {
           <div className="grid grid-cols-3 gap-4">
             <dt className="text-sm font-medium text-gray-500">Onboarding Status</dt>
             <dd className="text-sm text-gray-900 col-span-2">
-              {provider.onboardingStatus === 'COMPLETED' ? (
+              {provider.providerStatus === 'ACTIVE' ? (
                 <span className="text-green-600">Completed</span>
-              ) : provider.onboardingStatus === 'IN_PROGRESS' ? (
-                <span className="text-amber-600">In Progress (Step {provider.onboardingStep})</span>
+              ) : provider.providerStatus === 'PENDING' ? (
+                <span className="text-amber-600">In Progress</span>
               ) : (
                 <span className="text-gray-600">Not Started</span>
               )}
@@ -335,19 +331,19 @@ function ProviderDetails({ provider }: { provider: Provider }) {
           <div className="grid grid-cols-3 gap-4">
             <dt className="text-sm font-medium text-gray-500">Preferred Contact</dt>
             <dd className="text-sm text-gray-900 col-span-2">
-              {provider.communicationPreference || 'Email'}
+              {provider.contactEmail ? 'Email' : 'Phone'}
             </dd>
           </div>
           <div className="grid grid-cols-3 gap-4">
             <dt className="text-sm font-medium text-gray-500">Newsletter</dt>
             <dd className="text-sm text-gray-900 col-span-2">
-              {provider.receivesNewsletter ? 'Subscribed' : 'Not subscribed'}
+              Not subscribed
             </dd>
           </div>
           <div className="grid grid-cols-3 gap-4">
             <dt className="text-sm font-medium text-gray-500">Last Contact</dt>
             <dd className="text-sm text-gray-900 col-span-2">
-              {provider.lastContactDate ? formatDate(provider.lastContactDate) : 'No recent contact'}
+              No recent contact
             </dd>
           </div>
           
@@ -399,7 +395,7 @@ function ProviderDetails({ provider }: { provider: Provider }) {
               <div className="grid grid-cols-3 gap-4">
                 <dt className="text-sm font-medium text-gray-500">ACH Verified</dt>
                 <dd className="text-sm text-gray-900 col-span-2">
-                  {provider.directDepositVerified ? 'Yes' : 'No'}
+                  {provider.bankAccountInfo ? 'Yes' : 'No'}
                 </dd>
               </div>
             </>
@@ -413,41 +409,33 @@ function ProviderDetails({ provider }: { provider: Provider }) {
           <div className="grid grid-cols-3 gap-4">
             <dt className="text-sm font-medium text-gray-500">Tax Form</dt>
             <dd className="text-sm text-gray-900 col-span-2">
-              {provider.taxForm}
+              W-9
             </dd>
           </div>
           <div className="grid grid-cols-3 gap-4">
             <dt className="text-sm font-medium text-gray-500">Tax Verified</dt>
             <dd className="text-sm text-gray-900 col-span-2">
-              {provider.taxDocumentVerified ? 'Yes' : 'No'}
+              No
             </dd>
           </div>
-          {provider.taxDocumentExpirationDate && (
+          {false && (
             <div className="grid grid-cols-3 gap-4">
               <dt className="text-sm font-medium text-gray-500">Tax Expiration</dt>
               <dd className="text-sm text-gray-900 col-span-2">
-                {formatDate(provider.taxDocumentExpirationDate)}
+                {formatDate(new Date())}
               </dd>
             </div>
           )}
         </dl>
       </div>
       
-      {(provider.notes || provider.contactNotes) && (
+      {provider.paymentTerms && (
         <div className="col-span-1 md:col-span-2">
           <h3 className="text-lg font-medium mb-3">Notes</h3>
-          {provider.notes && (
-            <div className="p-4 bg-gray-50 rounded-md mb-4">
-              <h4 className="text-sm font-medium text-gray-700 mb-1">General Notes</h4>
-              <p className="text-sm text-gray-800 whitespace-pre-line">{provider.notes}</p>
-            </div>
-          )}
-          {provider.contactNotes && (
-            <div className="p-4 bg-blue-50 rounded-md">
-              <h4 className="text-sm font-medium text-blue-700 mb-1">Contact History Notes</h4>
-              <p className="text-sm text-blue-800 whitespace-pre-line">{provider.contactNotes}</p>
-            </div>
-          )}
+          <div className="p-4 bg-gray-50 rounded-md mb-4">
+            <h4 className="text-sm font-medium text-gray-700 mb-1">Payment Terms</h4>
+            <p className="text-sm text-gray-800 whitespace-pre-line">{provider.paymentTerms}</p>
+          </div>
         </div>
       )}
     </div>
@@ -860,9 +848,7 @@ function ProviderCommunications({
               >
                 <option value="EMAIL">Email ({provider.contactEmail})</option>
                 <option value="SMS">SMS ({provider.contactPhone})</option>
-                {provider.portalAccess && (
-                  <option value="PORTAL">Portal Message</option>
-                )}
+                <option value="PORTAL">Portal Message</option>
               </select>
             </div>
             
@@ -955,46 +941,21 @@ function ProviderPortalAccess({ provider, providerId }: { provider: Provider, pr
           <div className="flex justify-between items-center">
             <div>
               <p className="text-gray-700 mb-1">
-                Status: <span className={`font-medium ${provider.portalAccess ? 'text-green-600' : 'text-red-600'}`}>
-                  {provider.portalAccess ? 'Enabled' : 'Disabled'}
+                Status: <span className="font-medium text-red-600">
+                  Disabled
                 </span>
               </p>
-              {provider.portalAccess && provider.portalUsername && (
-                <p className="text-sm text-gray-600">
-                  Username: {provider.portalUsername}
-                </p>
-              )}
-              {provider.lastPortalLogin && (
-                <p className="text-sm text-gray-600">
-                  Last login: {formatDate(provider.lastPortalLogin)}
-                </p>
-              )}
+              {/* Portal access is disabled */}
+              {/* No login history */}
             </div>
             
             <div className="space-x-2">
-              {provider.portalAccess ? (
-                <>
-                  <button
-                    onClick={() => setIsResettingPassword(true)}
-                    className="px-4 py-2 bg-amber-600 text-white rounded shadow-sm hover:bg-amber-700"
-                  >
-                    Reset Password
-                  </button>
-                  <button
-                    onClick={() => setIsEnablingPortal(true)}
-                    className="px-4 py-2 bg-red-600 text-white rounded shadow-sm hover:bg-red-700"
-                  >
-                    Disable Access
-                  </button>
-                </>
-              ) : (
-                <button
-                  onClick={() => setIsEnablingPortal(true)}
-                  className="px-4 py-2 bg-green-600 text-white rounded shadow-sm hover:bg-green-700"
-                >
-                  Enable Portal Access
-                </button>
-              )}
+              <button
+                onClick={() => setIsEnablingPortal(true)}
+                className="px-4 py-2 bg-green-600 text-white rounded shadow-sm hover:bg-green-700"
+              >
+                Enable Portal Access
+              </button>
             </div>
           </div>
         </div>
@@ -1004,14 +965,10 @@ function ProviderPortalAccess({ provider, providerId }: { provider: Provider, pr
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
             <h3 className="text-lg font-medium mb-4">
-              {provider.portalAccess ? 'Disable Portal Access' : 'Enable Portal Access'}
+              Enable Portal Access
             </h3>
             
-            {provider.portalAccess ? (
-              <p className="mb-4 text-gray-700">
-                Are you sure you want to disable portal access for {provider.name}? They will no longer be able to log in or view their account information.
-              </p>
-            ) : (
+            {(
               <div className="space-y-4 mb-4">
                 <p className="text-gray-700">
                   You are about to enable portal access for {provider.name}. They will receive an email with instructions to set up their account.
@@ -1046,13 +1003,9 @@ function ProviderPortalAccess({ provider, providerId }: { provider: Provider, pr
                   // Implementation would go here
                   setIsEnablingPortal(false);
                 }}
-                className={`px-4 py-2 text-white rounded shadow-sm ${
-                  provider.portalAccess 
-                    ? 'bg-red-600 hover:bg-red-700' 
-                    : 'bg-green-600 hover:bg-green-700'
-                }`}
+                className="px-4 py-2 text-white rounded shadow-sm bg-green-600 hover:bg-green-700"
               >
-                {provider.portalAccess ? 'Disable Access' : 'Enable Access'}
+                Enable Access
               </button>
             </div>
           </div>

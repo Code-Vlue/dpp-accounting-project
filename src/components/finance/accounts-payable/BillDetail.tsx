@@ -47,7 +47,7 @@ export default function BillDetail({ billId }: BillDetailProps) {
   const vendor = vendors.find(v => v.id === selectedBill.vendorId);
   
   const handleApprove = async () => {
-    await approveBill(billId, 'user1'); // TODO: Replace with actual user ID
+    await approveBill(billId);
   };
   
   const handlePost = async () => {

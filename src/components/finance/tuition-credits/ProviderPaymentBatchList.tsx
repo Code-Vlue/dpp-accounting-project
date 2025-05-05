@@ -11,13 +11,21 @@ interface ProviderPaymentBatchListProps {
   status?: PaymentStatus;
   startDate?: Date;
   endDate?: Date;
+  batches?: ProviderPaymentBatch[];
+  onView?: (id: string) => void;
+  onProcess?: (id: string) => void;
+  onGeneratePayfile?: (id: string) => void;
 }
 
 export default function ProviderPaymentBatchList({ 
   searchTerm = '', 
   status, 
   startDate,
-  endDate
+  endDate,
+  batches: propBatches,
+  onView,
+  onProcess,
+  onGeneratePayfile
 }: ProviderPaymentBatchListProps) {
   const { 
     providerPaymentBatches, 
@@ -29,11 +37,15 @@ export default function ProviderPaymentBatchList({
   const [filteredBatches, setFilteredBatches] = useState<ProviderPaymentBatch[]>([]);
   
   useEffect(() => {
-    fetchProviderPaymentBatches();
-  }, [fetchProviderPaymentBatches]);
+    // Only fetch if we're not given batches as props
+    if (!propBatches) {
+      fetchProviderPaymentBatches();
+    }
+  }, [fetchProviderPaymentBatches, propBatches]);
   
   useEffect(() => {
-    let filtered = [...providerPaymentBatches];
+    // Use the batches from props if available, otherwise use the ones from the store
+    let filtered = [...(propBatches || providerPaymentBatches)];
     
     // Filter by search term if provided
     if (searchTerm) {
@@ -59,13 +71,14 @@ export default function ProviderPaymentBatchList({
     }
     
     setFilteredBatches(filtered);
-  }, [providerPaymentBatches, searchTerm, status, startDate, endDate]);
+  }, [propBatches, providerPaymentBatches, searchTerm, status, startDate, endDate]);
   
-  if (providerPaymentBatchesLoading) {
+  // Only show loading/error states if we're not given batches via props
+  if (!propBatches && providerPaymentBatchesLoading) {
     return <div className="p-4 text-center">Loading payment batches...</div>;
   }
   
-  if (providerPaymentBatchesError) {
+  if (!propBatches && providerPaymentBatchesError) {
     return <div className="p-4 text-center text-red-500">Error loading batches: {providerPaymentBatchesError}</div>;
   }
   
@@ -118,27 +131,56 @@ export default function ProviderPaymentBatchList({
               </td>
               <td className="py-2 px-4 border-b">
                 <div className="flex space-x-2">
-                  <Link 
-                    href={`/finance/tuition-credits/payment-batches/${batch.id}`}
-                    className="text-blue-600 hover:text-blue-800"
-                  >
-                    View
-                  </Link>
-                  {batch.status === PaymentStatus.PENDING && (
-                    <Link 
-                      href={`/finance/tuition-credits/payment-batches/${batch.id}/generate-payfile`}
-                      className="text-green-600 hover:text-green-800"
+                  {onView ? (
+                    <button 
+                      onClick={() => onView(batch.id)}
+                      className="text-blue-600 hover:text-blue-800"
                     >
-                      Generate Payfile
+                      View
+                    </button>
+                  ) : (
+                    <Link 
+                      href={`/finance/tuition-credits/payment-batches/${batch.id}`}
+                      className="text-blue-600 hover:text-blue-800"
+                    >
+                      View
                     </Link>
                   )}
+                  
                   {batch.status === PaymentStatus.PENDING && (
-                    <Link 
-                      href={`/finance/tuition-credits/payment-batches/${batch.id}/process`}
-                      className="text-purple-600 hover:text-purple-800"
-                    >
-                      Process
-                    </Link>
+                    onGeneratePayfile ? (
+                      <button 
+                        onClick={() => onGeneratePayfile(batch.id)}
+                        className="text-green-600 hover:text-green-800"
+                      >
+                        Generate Payfile
+                      </button>
+                    ) : (
+                      <Link 
+                        href={`/finance/tuition-credits/payment-batches/${batch.id}/generate-payfile`}
+                        className="text-green-600 hover:text-green-800"
+                      >
+                        Generate Payfile
+                      </Link>
+                    )
+                  )}
+                  
+                  {batch.status === PaymentStatus.PENDING && (
+                    onProcess ? (
+                      <button 
+                        onClick={() => onProcess(batch.id)}
+                        className="text-purple-600 hover:text-purple-800"
+                      >
+                        Process
+                      </button>
+                    ) : (
+                      <Link 
+                        href={`/finance/tuition-credits/payment-batches/${batch.id}/process`}
+                        className="text-purple-600 hover:text-purple-800"
+                      >
+                        Process
+                      </Link>
+                    )
                   )}
                 </div>
               </td>

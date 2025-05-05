@@ -8,7 +8,8 @@ import {
   AssetType, 
   AssetStatus, 
   DepreciationMethod,
-  AssetCategory
+  AssetCategory,
+  AccountType
 } from '@/types/finance';
 import { useFinanceStore } from '@/store/finance-store';
 
@@ -80,7 +81,7 @@ const AssetForm: React.FC<AssetFormProps> = ({ assetId, initialData }) => {
         await fetchVendors();
         
         // Load accounts
-        await fetchAccountsByType('ASSET');
+        await fetchAccountsByType(AccountType.ASSET);
         
         // If editing, fetch the asset
         if (assetId) {
@@ -201,8 +202,9 @@ const AssetForm: React.FC<AssetFormProps> = ({ assetId, initialData }) => {
         router.push(`/finance/asset-management/assets/${assetId}`);
       } else {
         // Create new asset
-        const newAsset = await createAsset(formData as any);
-        router.push(`/finance/asset-management/assets/${newAsset?.id}`);
+        await createAsset(formData as any);
+        // Navigate back to asset list since we don't have the new ID
+        router.push(`/finance/asset-management/assets`);
       }
     } catch (error) {
       console.error('Error saving asset:', error);

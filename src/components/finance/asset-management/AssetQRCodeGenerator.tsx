@@ -10,10 +10,26 @@ interface AssetQRCodeGeneratorProps {
 
 export function AssetQRCodeGenerator({ assetId }: AssetQRCodeGeneratorProps) {
   const { getAssetById } = useFinanceStore();
-  const asset = getAssetById(assetId);
-  
+  const [asset, setAsset] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const [qrSize, setQrSize] = useState<'small' | 'medium' | 'large'>('medium');
   const [includeDetails, setIncludeDetails] = useState(true);
+  
+  // Fetch asset data on component mount
+  React.useEffect(() => {
+    const fetchAsset = async () => {
+      try {
+        const assetData = await getAssetById(assetId);
+        setAsset(assetData);
+      } catch (error) {
+        console.error('Error fetching asset:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchAsset();
+  }, [assetId, getAssetById]);
   
   // This is a placeholder for QR code generation
   // In a real implementation, you would use a library like qrcode.react
@@ -122,6 +138,14 @@ export function AssetQRCodeGenerator({ assetId }: AssetQRCodeGeneratorProps) {
       printWindow.document.close();
     }
   };
+  
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12"></div>
+      </div>
+    );
+  }
   
   if (!asset) {
     return (

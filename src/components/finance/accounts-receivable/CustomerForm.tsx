@@ -47,7 +47,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({ customerId, onSuccess }) =>
     phone: '',
     address: {
       street1: '',
-      street2: '',
+      // street2 is optional in the Address interface
       city: '',
       state: '',
       zipCode: '',
@@ -89,7 +89,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({ customerId, onSuccess }) =>
         phone: selectedCustomer.phone || '',
         address: selectedCustomer.address || {
           street1: '',
-          street2: '',
+          // street2 is optional in the Address interface
           city: '',
           state: '',
           zipCode: '',
@@ -186,7 +186,10 @@ const CustomerForm: React.FC<CustomerFormProps> = ({ customerId, onSuccess }) =>
         defaultAccountId: form.defaultAccountId || undefined,
         taxIdentification: form.taxIdentification || undefined,
         creditLimit: form.creditLimit,
-        createdById: 'current-user' // This would be replaced with the actual user ID
+        createdById: 'current-user', // This would be replaced with the actual user ID
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        yearToDateReceivables: 0 // Initialize to zero for new customers
       });
     }
 

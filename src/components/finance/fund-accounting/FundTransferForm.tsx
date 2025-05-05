@@ -20,6 +20,11 @@ const FundTransferForm: React.FC<FundTransferFormProps> = ({ userId, onComplete 
   } = useFinanceStore();
 
   const [formError, setFormError] = useState<string>('');
+  
+  // Format currency with $ sign and 2 decimal places
+  const formatCurrency = (amount: number): string => {
+    return `$${amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`;
+  };
 
   useEffect(() => {
     fetchFunds();
@@ -97,7 +102,7 @@ const FundTransferForm: React.FC<FundTransferFormProps> = ({ userId, onComplete 
             <option value="">Select Source Fund</option>
             {funds.map((fund) => (
               <option key={fund.id} value={fund.id}>
-                {fund.name} (${fund.fundBalance.toLocaleString()})
+                {fund.name} ({formatCurrency(fund.fundBalance)})
               </option>
             ))}
           </select>
@@ -117,7 +122,7 @@ const FundTransferForm: React.FC<FundTransferFormProps> = ({ userId, onComplete 
             <option value="">Select Destination Fund</option>
             {funds.map((fund) => (
               <option key={fund.id} value={fund.id}>
-                {fund.name} (${fund.fundBalance.toLocaleString()})
+                {fund.name} ({formatCurrency(fund.fundBalance)})
               </option>
             ))}
           </select>

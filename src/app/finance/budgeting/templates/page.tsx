@@ -37,9 +37,14 @@ export default function BudgetTemplatesPage() {
   };
   
   // Format date
-  const formatDate = (dateString: string) => {
-    if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleDateString();
+  const formatDate = (dateInput: string | Date) => {
+    if (!dateInput) return 'N/A';
+    
+    const date = dateInput instanceof Date 
+      ? dateInput 
+      : new Date(dateInput);
+      
+    return date.toLocaleDateString();
   };
   
   // Format currency

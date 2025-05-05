@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useFinanceStore } from '@/store/finance-store';
-import { BankReconciliation, BankAccount, BankTransaction } from '@/types/finance';
+import { BankReconciliation, BankAccount, BankTransaction, ReconciliationStatus } from '@/types/finance';
 import TransactionList from './TransactionList';
 import TransactionMatchingPanel from './TransactionMatchingPanel';
 
@@ -39,12 +39,14 @@ export default function ReconciliationDetail({ reconciliationId }: Reconciliatio
           const accountData = await getBankAccount(reconciliationData.bankAccountId);
           setBankAccount(accountData);
           
-          const transactions = await getBankTransactions({
-            bankAccountId: reconciliationData.bankAccountId,
-            startDate: reconciliationData.statementDate,
-            endDate: reconciliationData.statementEndingDate,
-            reconciled: false
-          });
+          const transactions = await getBankTransactions(
+            reconciliationData.bankAccountId,
+            {
+              startDate: reconciliationData.startDate,
+              endDate: reconciliationData.endDate,
+              reconciled: false
+            }
+          );
           setUnreconciledTransactions(transactions);
         }
       } catch (err) {
@@ -98,12 +100,14 @@ export default function ReconciliationDetail({ reconciliationId }: Reconciliatio
     setSelectedTransaction(null);
     // Refresh unreconciled transactions
     if (reconciliation) {
-      getBankTransactions({
-        bankAccountId: reconciliation.bankAccountId,
-        startDate: reconciliation.statementDate,
-        endDate: reconciliation.statementEndingDate,
-        reconciled: false
-      }).then(setUnreconciledTransactions);
+      getBankTransactions(
+        reconciliation.bankAccountId,
+        {
+          startDate: reconciliation.startDate,
+          endDate: reconciliation.endDate,
+          reconciled: false
+        }
+      ).then(setUnreconciledTransactions);
     }
   };
   
@@ -120,14 +124,14 @@ export default function ReconciliationDetail({ reconciliationId }: Reconciliatio
   }
   
   const difference = bankAccount.currentBalance - reconciliation.statementBalance;
-  const isReconciled = reconciliation.status === 'completed';
+  const isReconciled = reconciliation.status === ReconciliationStatus.COMPLETED;
   const canComplete = difference === 0 && unreconciledTransactions.length === 0;
   
   return (
     <div className="p-4 bg-white rounded-lg shadow">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-semibold">
-          Reconciliation: {bankAccount.accountName}
+          Reconciliation: {bankAccount.name}
         </h2>
         <div className="flex space-x-2">
           {!isReconciled && (
@@ -150,7 +154,7 @@ export default function ReconciliationDetail({ reconciliationId }: Reconciliatio
           )}
           {isReconciled && (
             <div className="px-3 py-1 bg-green-100 text-green-800 rounded">
-              Reconciled on {new Date(reconciliation.completedDate || '').toLocaleDateString()}
+              Reconciled on {new Date(reconciliation.lastActivity).toLocaleDateString()}
             </div>
           )}
         </div>
@@ -165,8 +169,8 @@ export default function ReconciliationDetail({ reconciliationId }: Reconciliatio
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="p-4 bg-blue-50 rounded">
           <h3 className="font-medium mb-2">Statement Details</h3>
-          <p>Statement Date: {new Date(reconciliation.statementDate).toLocaleDateString()}</p>
-          <p>Statement Ending Date: {new Date(reconciliation.statementEndingDate).toLocaleDateString()}</p>
+          <p>Statement Date: {new Date(reconciliation.startDate).toLocaleDateString()}</p>
+          <p>Statement Ending Date: {new Date(reconciliation.endDate).toLocaleDateString()}</p>
           <p className="font-semibold">Statement Balance: ${reconciliation.statementBalance.toFixed(2)}</p>
         </div>
         
@@ -187,11 +191,11 @@ export default function ReconciliationDetail({ reconciliationId }: Reconciliatio
           <h3 className="font-medium mb-2">Reconciliation Status</h3>
           <p>Status: 
             <span className={`ml-2 font-semibold ${
-              reconciliation.status === 'completed' ? 'text-green-600' : 
-              reconciliation.status === 'in_progress' ? 'text-blue-600' : 'text-yellow-600'
+              reconciliation.status === ReconciliationStatus.COMPLETED ? 'text-green-600' : 
+              reconciliation.status === ReconciliationStatus.IN_PROGRESS ? 'text-blue-600' : 'text-yellow-600'
             }`}>
-              {reconciliation.status === 'completed' ? 'Completed' : 
-               reconciliation.status === 'in_progress' ? 'In Progress' : 'Draft'}
+              {reconciliation.status === ReconciliationStatus.COMPLETED ? 'Completed' : 
+               reconciliation.status === ReconciliationStatus.IN_PROGRESS ? 'In Progress' : 'Draft'}
             </span>
           </p>
           <p>Unreconciled Transactions: {unreconciledTransactions.length}</p>

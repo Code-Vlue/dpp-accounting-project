@@ -65,7 +65,7 @@ export default function ProviderPaymentBatchDetailsPage() {
     setErrorMessage(null);
     
     try {
-      await processProviderPaymentBatch(batchId, 'current-user'); // Would normally use actual user ID from auth
+      await processProviderPaymentBatch(batchId); // Process the payment batch
       fetchProviderPaymentBatchById(batchId);
     } catch (error: any) {
       setErrorMessage(error.message || 'Failed to process payment batch');

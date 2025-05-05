@@ -4,7 +4,7 @@
 import * as React from "react";
 
 interface AlertProps extends React.HTMLAttributes<HTMLDivElement> {
-  variant?: "default" | "info" | "success" | "warning" | "danger";
+  variant?: "default" | "info" | "success" | "warning" | "danger" | "destructive";
 }
 
 export function Alert({
@@ -20,6 +20,7 @@ export function Alert({
     success: "bg-green-50 text-green-800 border-green-100",
     warning: "bg-yellow-50 text-yellow-800 border-yellow-100",
     danger: "bg-red-50 text-red-800 border-red-100",
+    destructive: "bg-red-50 text-red-800 border-red-100",
   };
   
   const combinedClassName = `${baseStyles} ${variantStyles[variant]} ${className}`;

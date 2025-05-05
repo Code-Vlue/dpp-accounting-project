@@ -144,11 +144,11 @@ export default function BudgetForm({ budgetId, budgetType = BudgetType.ANNUAL }:
     try {
       if (budgetId) {
         // Update existing budget
-        await updateBudget(budgetId);
+        await updateBudget(budgetId, budgetDraft);
         router.push(`/finance/budgeting/${getBudgetTypePath(budgetDraft.type as BudgetType)}/${budgetId}`);
       } else {
         // Create new budget
-        const newBudgetId = await createBudget();
+        const newBudgetId = await createBudget(budgetDraft as any);
         router.push(`/finance/budgeting/${getBudgetTypePath(budgetDraft.type as BudgetType)}/${newBudgetId}`);
       }
     } catch (error) {
@@ -362,7 +362,9 @@ export default function BudgetForm({ budgetId, budgetType = BudgetType.ANNUAL }:
                   type="date"
                   name="startDate"
                   id="startDate"
-                  value={budgetDraft.startDate || ''}
+                  value={budgetDraft.startDate instanceof Date 
+                    ? budgetDraft.startDate.toISOString().split('T')[0] 
+                    : budgetDraft.startDate || ''}
                   onChange={handleChange}
                   className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
                 />
@@ -376,7 +378,9 @@ export default function BudgetForm({ budgetId, budgetType = BudgetType.ANNUAL }:
                   type="date"
                   name="endDate"
                   id="endDate"
-                  value={budgetDraft.endDate || ''}
+                  value={budgetDraft.endDate instanceof Date 
+                    ? budgetDraft.endDate.toISOString().split('T')[0]
+                    : budgetDraft.endDate || ''}
                   onChange={handleChange}
                   className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
                 />

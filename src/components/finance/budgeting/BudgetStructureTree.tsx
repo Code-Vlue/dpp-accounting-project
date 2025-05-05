@@ -183,7 +183,7 @@ export default function BudgetStructureTree({ fiscalYearId }: BudgetStructureTre
                           )}
                         </div>
                         <div className="text-sm text-gray-500">
-                          {budget.fiscalYear?.name || budget.fiscalYearId}
+                          {budget.fiscalYearId}
                         </div>
                       </div>
                     </div>
@@ -265,7 +265,7 @@ export default function BudgetStructureTree({ fiscalYearId }: BudgetStructureTre
                                       </span>
                                     </div>
                                     <div className="text-sm text-gray-500">
-                                      {budget.fiscalYear?.name || budget.fiscalYearId}
+                                      {budget.fiscalYearId}
                                     </div>
                                   </div>
                                 </div>
@@ -336,7 +336,7 @@ export default function BudgetStructureTree({ fiscalYearId }: BudgetStructureTre
                                                     </span>
                                                   </div>
                                                   <div className="text-sm text-gray-500">
-                                                    {budget.fiscalYear?.name || budget.fiscalYearId}
+                                                    {budget.fiscalYearId}
                                                   </div>
                                                 </div>
                                               </div>
@@ -392,7 +392,7 @@ export default function BudgetStructureTree({ fiscalYearId }: BudgetStructureTre
                                                               </span>
                                                             </div>
                                                             <div className="text-sm text-gray-500">
-                                                              {budget.fiscalYear?.name || budget.fiscalYearId}
+                                                              {budget.fiscalYearId}
                                                             </div>
                                                           </div>
                                                         </div>

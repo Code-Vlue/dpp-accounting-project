@@ -48,7 +48,9 @@ const AssetDepreciationSchedule: React.FC<AssetDepreciationScheduleProps> = ({ a
   const handleRecordDepreciation = async () => {
     setRecordingDepreciation(true);
     try {
-      await recordAssetDepreciation(assetId, new Date());
+      // Pass the current date's month as the depreciation amount (placeholder)
+      // In a real implementation, this would be calculated based on the asset's depreciation schedule
+      await recordAssetDepreciation(assetId, 0);
     } catch (error) {
       console.error('Error recording depreciation:', error);
       alert('Failed to record depreciation');

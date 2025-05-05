@@ -81,7 +81,9 @@ const InvoiceDetail: React.FC<InvoiceDetailProps> = ({ invoiceId }) => {
     if (!selectedInvoice || !voidReason.trim()) return;
     
     setIsVoiding(true);
-    await voidInvoice(selectedInvoice.id, voidReason);
+    // Function only takes the ID parameter according to the store definition
+    await voidInvoice(selectedInvoice.id);
+    // We should consider enhancing the function to include void reason in the future
     setIsVoiding(false);
     setShowVoidModal(false);
     setVoidReason('');

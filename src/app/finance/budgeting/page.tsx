@@ -20,7 +20,7 @@ export default function BudgetingDashboard() {
   const [activeTab, setActiveTab] = useState('annual');
 
   // Fetch budgets on component mount
-  useState(() => {
+  React.useEffect(() => {
     fetchBudgets();
   }, [fetchBudgets]);
 
@@ -167,7 +167,7 @@ export default function BudgetingDashboard() {
             <div className="px-4 py-5 sm:px-6 bg-blue-50">
               <h3 className="text-lg leading-6 font-medium text-gray-900">Current Annual Budget</h3>
               <p className="mt-1 max-w-2xl text-sm text-gray-500">
-                {currentAnnualBudget.fiscalYear?.name || currentAnnualBudget.fiscalYearId}
+                {currentAnnualBudget.fiscalYearId}
               </p>
             </div>
             <div className="border-t border-gray-200">

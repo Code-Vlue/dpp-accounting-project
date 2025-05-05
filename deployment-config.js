@@ -26,9 +26,9 @@ module.exports = {
       aws: {
         region: 'us-east-1',
         s3Bucket: process.env.PROD_BUCKET_NAME || 'dpp-accounting-platform-prod',
-        cloudfrontDistribution: process.env.PROD_CLOUDFRONT_DISTRIBUTION_ID || '',
+        cloudfrontDistribution: process.env.PROD_CLOUDFRONT_DISTRIBUTION_ID || 'E1MRFBRY0MYRAU',
       },
-      url: process.env.PROD_SITE_URL || 'https://www.dpp-accounting-platform.example.com',
+      url: process.env.PROD_SITE_URL || 'https://d3b2beatmnvsp8.cloudfront.net',
       apiUrl: process.env.PROD_API_URL || 'https://api.dpp-accounting-platform.example.com',
     },
   },

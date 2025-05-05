@@ -56,6 +56,8 @@ export default function NewTuitionCreditBatchPage() {
       await createTuitionCreditBatch({
         ...batchData,
         createdById: 'current-user-id', // Replace with actual user ID
+        createdAt: new Date(), // Provide required field
+        updatedAt: new Date()  // Provide required field
       });
       router.push('/finance/tuition-credits/batches');
     } catch (error) {

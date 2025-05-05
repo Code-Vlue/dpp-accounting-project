@@ -3,12 +3,12 @@ import React from 'react';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useFinanceStore } from '@/store/finance-store';
-import { BankAccount, BankReconciliation, BankTransaction } from '@/types/finance';
+import { BankAccount, BankReconciliation, BankTransaction, ReconciliationStatus } from '@/types/finance';
 
 interface ReconciliationFormProps {
   bankAccountId: string;
   reconciliationId?: string;
-  onSuccess?: () => void;
+  onSuccess?: (reconciliationId: string) => void;
   onCancel?: () => void;
 }
 
@@ -25,11 +25,18 @@ export default function ReconciliationForm({
   const [bankAccount, setBankAccount] = useState<BankAccount | null>(null);
   const [formData, setFormData] = useState<Partial<BankReconciliation>>({
     bankAccountId: bankAccountId,
-    statementDate: new Date().toISOString().split('T')[0],
+    startDate: new Date(),
+    endDate: new Date(),
+    startingBalance: 0,
+    endingBalance: 0,
     statementBalance: 0,
-    statementEndingDate: new Date().toISOString().split('T')[0],
+    adjustedStatementBalance: 0,
+    unreconciled: 0,
+    lastActivity: new Date(),
+    createdById: '',
     notes: '',
-    status: 'in_progress'
+    status: ReconciliationStatus.IN_PROGRESS,
+    isAutoReconciled: false
   });
   const [unreconciled, setUnreconciled] = useState<BankTransaction[]>([]);
 
@@ -41,10 +48,10 @@ export default function ReconciliationForm({
         setBankAccount(account);
         
         // Fetch unreconciled transactions
-        const transactions = await getBankTransactions({
+        const transactions = await getBankTransactions(
           bankAccountId,
-          reconciled: false
-        });
+          { reconciled: false }
+        );
         setUnreconciled(transactions);
         
         if (reconciliationId) {
@@ -52,8 +59,8 @@ export default function ReconciliationForm({
           if (reconciliation) {
             setFormData({
               ...reconciliation,
-              statementDate: reconciliation.statementDate.split('T')[0],
-              statementEndingDate: reconciliation.statementEndingDate.split('T')[0]
+              startDate: reconciliation.startDate,
+              endDate: reconciliation.endDate
             });
           }
         }
@@ -70,10 +77,19 @@ export default function ReconciliationForm({
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    
+    // Handle date inputs
+    if (name === 'startDate' || name === 'endDate') {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value ? new Date(value) : null
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
   };
 
   const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -96,10 +112,13 @@ export default function ReconciliationForm({
         await createBankReconciliation(formData as BankReconciliation);
       }
       
+      // Get the created/updated reconciliation ID
+      const resultId = reconciliationId || 'new'; // This would ideally be the actual ID returned from create
+      
       if (onSuccess) {
-        onSuccess();
+        onSuccess(resultId);
       } else {
-        router.push(`/finance/banking/reconciliations/${reconciliationId || 'new'}`);
+        router.push(`/finance/banking/reconciliations/${resultId}`);
       }
     } catch (err) {
       setError('Failed to save reconciliation. Please try again.');
@@ -124,7 +143,7 @@ export default function ReconciliationForm({
       </h2>
       
       <div className="mb-4 p-3 bg-blue-50 rounded">
-        <h3 className="font-medium">Account: {bankAccount.accountName}</h3>
+        <h3 className="font-medium">Account: {bankAccount.name}</h3>
         <p>Account Number: {bankAccount.accountNumber.replace(/(?<=^.{4}).*(?=.{4}$)/, '******')}</p>
         <p>Current Book Balance: ${bankAccount.currentBalance.toFixed(2)}</p>
         <p>Last Reconciled: {bankAccount.lastReconciliationDate ? new Date(bankAccount.lastReconciliationDate).toLocaleDateString() : 'Never'}</p>
@@ -144,8 +163,8 @@ export default function ReconciliationForm({
             </label>
             <input
               type="date"
-              name="statementDate"
-              value={formData.statementDate}
+              name="startDate"
+              value={formData.startDate ? new Date(formData.startDate).toISOString().split('T')[0] : ''}
               onChange={handleChange}
               className="w-full p-2 border rounded"
               required
@@ -158,8 +177,8 @@ export default function ReconciliationForm({
             </label>
             <input
               type="date"
-              name="statementEndingDate"
-              value={formData.statementEndingDate}
+              name="endDate"
+              value={formData.endDate ? new Date(formData.endDate).toISOString().split('T')[0] : ''}
               onChange={handleChange}
               className="w-full p-2 border rounded"
               required

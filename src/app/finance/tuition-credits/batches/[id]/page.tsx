@@ -43,7 +43,8 @@ export default function TuitionCreditBatchDetailPage({ params }: { params: { id:
   const handleProcess = async () => {
     if (selectedTuitionCreditBatch) {
       try {
-        await processTuitionCreditBatch(batchId, 'current-user-id'); // Replace with actual user ID
+        // processTuitionCreditBatch only takes one argument according to the store definition
+        await processTuitionCreditBatch(batchId);
         fetchTuitionCreditBatchById(batchId); // Refresh data
       } catch (error) {
         console.error('Failed to process tuition credit batch:', error);
@@ -59,8 +60,8 @@ export default function TuitionCreditBatchDetailPage({ params }: { params: { id:
       case TuitionCreditStatus.APPROVED: return 'default';
       case TuitionCreditStatus.PROCESSED: return 'success';
       case TuitionCreditStatus.PAID: return 'success';
-      case TuitionCreditStatus.REJECTED: return 'destructive';
-      case TuitionCreditStatus.VOIDED: return 'destructive';
+      case TuitionCreditStatus.REJECTED: return 'danger';
+      case TuitionCreditStatus.VOIDED: return 'danger';
       default: return 'secondary';
     }
   };

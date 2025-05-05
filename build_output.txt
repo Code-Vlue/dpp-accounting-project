@@ -1,0 +1,181 @@
+
+> dpp-accounting-platform@0.1.0 build
+> next build
+
+  ▲ Next.js 14.2.0
+  - Environments: .env.local, .env
+  - Experiments (use with caution):
+    · missingSuspenseWithCSRBailout
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/69) ...
+ ⚠ Entire page "/auth/error" deopted into client-side rendering due to "useSearchParams()". Read more: https://nextjs.org/docs/messages/deopted-into-client-rendering
+    at o (/workspace/DPP-Project/.next/server/chunks/4471.js:1:10433)
+    at d (/workspace/DPP-Project/.next/server/chunks/4471.js:1:21276)
+    at i (/workspace/DPP-Project/.next/server/app/auth/error/page.js:1:2964)
+    at nj (/workspace/DPP-Project/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:46251)
+    at nM (/workspace/DPP-Project/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:47571)
+    at nN (/workspace/DPP-Project/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64546)
+    at nI (/workspace/DPP-Project/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:47010)
+    at nM (/workspace/DPP-Project/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:47717)
+    at nM (/workspace/DPP-Project/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:61546)
+    at nN (/workspace/DPP-Project/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64546)
+   Generating static pages (17/69) 
+   Generating static pages (34/69) 
+   Generating static pages (51/69) 
+ ⚠ Entire page "/auth/login" deopted into client-side rendering due to "useSearchParams()". Read more: https://nextjs.org/docs/messages/deopted-into-client-rendering
+    at o (/workspace/DPP-Project/.next/server/chunks/4471.js:1:10433)
+    at d (/workspace/DPP-Project/.next/server/chunks/4471.js:1:21276)
+    at l (/workspace/DPP-Project/.next/server/app/auth/login/page.js:1:2618)
+    at nj (/workspace/DPP-Project/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:46251)
+    at nM (/workspace/DPP-Project/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:47571)
+    at nM (/workspace/DPP-Project/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:61546)
+    at nN (/workspace/DPP-Project/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64546)
+    at nB (/workspace/DPP-Project/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67538)
+    at nM (/workspace/DPP-Project/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:58560)
+    at nN (/workspace/DPP-Project/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64546)
+ ⚠ Entire page "/auth/verify" deopted into client-side rendering due to "useSearchParams()". Read more: https://nextjs.org/docs/messages/deopted-into-client-rendering
+    at o (/workspace/DPP-Project/.next/server/chunks/4471.js:1:10433)
+    at d (/workspace/DPP-Project/.next/server/chunks/4471.js:1:21276)
+    at l (/workspace/DPP-Project/.next/server/app/auth/verify/page.js:1:2626)
+    at nj (/workspace/DPP-Project/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:46251)
+    at nM (/workspace/DPP-Project/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:47571)
+    at nM (/workspace/DPP-Project/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:61546)
+    at nN (/workspace/DPP-Project/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64546)
+    at nB (/workspace/DPP-Project/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67538)
+    at nM (/workspace/DPP-Project/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:58560)
+    at nN (/workspace/DPP-Project/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64546)
+ ⚠ Entire page "/auth/reset-password" deopted into client-side rendering due to "useSearchParams()". Read more: https://nextjs.org/docs/messages/deopted-into-client-rendering
+    at o (/workspace/DPP-Project/.next/server/chunks/4471.js:1:10433)
+    at d (/workspace/DPP-Project/.next/server/chunks/4471.js:1:21276)
+    at d (/workspace/DPP-Project/.next/server/app/auth/reset-password/page.js:1:2673)
+    at nj (/workspace/DPP-Project/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:46251)
+    at nM (/workspace/DPP-Project/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:47571)
+    at nM (/workspace/DPP-Project/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:61546)
+    at nN (/workspace/DPP-Project/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64546)
+    at nB (/workspace/DPP-Project/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67538)
+    at nM (/workspace/DPP-Project/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:58560)
+    at nN (/workspace/DPP-Project/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64546)
+ ✓ Generating static pages (69/69)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                                         Size     First Load JS
+┌ ○ /                                                               178 B          94.1 kB
+├ ○ /_not-found                                                     883 B            88 kB
+├ ƒ /api/auth/[...nextauth]                                         0 B                0 B
+├ ○ /auth/error                                                     1.4 kB         95.3 kB
+├ ○ /auth/forgot-password                                           1.32 kB         124 kB
+├ ○ /auth/login                                                     1.54 kB         124 kB
+├ ○ /auth/mfa                                                       3.12 kB         116 kB
+├ ƒ /auth/profile                                                   2.41 kB         125 kB
+├ ○ /auth/reset-password                                            2.05 kB         124 kB
+├ ○ /auth/signin                                                    1.3 kB         98.7 kB
+├ ○ /auth/signout                                                   1.36 kB        98.8 kB
+├ ○ /auth/signup                                                    2.28 kB         125 kB
+├ ○ /auth/verify                                                    1.54 kB         124 kB
+├ ○ /dashboard                                                      9 kB            188 kB
+├ ○ /finance/accounts-payable                                       3.24 kB         137 kB
+├ ○ /finance/accounts-payable/bills                                 2.43 kB         136 kB
+├ ƒ /finance/accounts-payable/bills/[id]                            2.79 kB         137 kB
+├ ƒ /finance/accounts-payable/bills/[id]/pay                        2.09 kB         129 kB
+├ ○ /finance/accounts-payable/bills/new                             2.58 kB         130 kB
+├ ○ /finance/accounts-payable/recurring-bills                       1.59 kB         135 kB
+├ ○ /finance/accounts-payable/vendors                               1.89 kB         136 kB
+├ ƒ /finance/accounts-payable/vendors/[id]                          2.48 kB         136 kB
+├ ƒ /finance/accounts-payable/vendors/[id]/edit                     148 B           130 kB
+├ ○ /finance/accounts-payable/vendors/new                           148 B           130 kB
+├ ○ /finance/accounts-receivable                                    3.26 kB         137 kB
+├ ○ /finance/accounts-receivable/aging                              1.4 kB          135 kB
+├ ○ /finance/accounts-receivable/customers                          2.13 kB         136 kB
+├ ƒ /finance/accounts-receivable/customers/[id]                     3.18 kB         137 kB
+├ ƒ /finance/accounts-receivable/customers/[id]/edit                275 B           130 kB
+├ ○ /finance/accounts-receivable/customers/new                      249 B           130 kB
+├ ○ /finance/accounts-receivable/invoices                           2.84 kB         137 kB
+├ ƒ /finance/accounts-receivable/invoices/[id]                      3 kB            137 kB
+├ ƒ /finance/accounts-receivable/invoices/[id]/edit                 275 B           131 kB
+├ ƒ /finance/accounts-receivable/invoices/[id]/receive-payment      2.77 kB         130 kB
+├ ○ /finance/accounts-receivable/invoices/new                       249 B           131 kB
+├ ○ /finance/accounts-receivable/recurring                          1.44 kB         135 kB
+├ ○ /finance/asset-management                                       1.76 kB         144 kB
+├ ○ /finance/asset-management/assets                                609 B           143 kB
+├ ƒ /finance/asset-management/assets/[id]                           599 B           143 kB
+├ ƒ /finance/asset-management/assets/[id]/dispose                   601 B           143 kB
+├ ƒ /finance/asset-management/assets/[id]/edit                      603 B           143 kB
+├ ○ /finance/asset-management/assets/new                            572 B           143 kB
+├ ○ /finance/banking                                                751 B           145 kB
+├ ○ /finance/banking/accounts                                       471 B           145 kB
+├ ƒ /finance/banking/accounts/[id]                                  892 B           145 kB
+├ ƒ /finance/banking/accounts/[id]/edit                             456 B           145 kB
+├ ƒ /finance/banking/accounts/[id]/import                           458 B           145 kB
+├ ƒ /finance/banking/accounts/[id]/reconcile                        466 B           145 kB
+├ ○ /finance/banking/accounts/new                                   426 B           145 kB
+├ ○ /finance/banking/reconciliations                                1.35 kB         128 kB
+├ ƒ /finance/banking/reconciliations/[id]                           599 B           145 kB
+├ ○ /finance/budgeting                                              2.4 kB          136 kB
+├ ƒ /finance/budgeting/annual/[id]                                  3.95 kB         138 kB
+├ ƒ /finance/budgeting/annual/[id]/edit                             1.04 kB         138 kB
+├ ƒ /finance/budgeting/annual/[id]/items/new                        3.38 kB         137 kB
+├ ○ /finance/budgeting/annual/new                                   626 B           137 kB
+├ ○ /finance/budgeting/import-export                                1.96 kB         136 kB
+├ ○ /finance/budgeting/revisions/new                                3.49 kB         137 kB
+├ ○ /finance/budgeting/templates                                    1.89 kB         136 kB
+├ ○ /finance/budgeting/variance                                     2.92 kB         137 kB
+├ ○ /finance/chart-of-accounts                                      1.77 kB         136 kB
+├ ƒ /finance/chart-of-accounts/[id]                                 2.44 kB         142 kB
+├ ƒ /finance/chart-of-accounts/[id]/edit                            391 B           130 kB
+├ ○ /finance/chart-of-accounts/new                                  348 B           130 kB
+├ ○ /finance/data-import-export                                     4.59 kB         132 kB
+├ ○ /finance/fund-accounting                                        713 B           132 kB
+├ ○ /finance/fund-accounting/allocations                            1.36 kB         133 kB
+├ ○ /finance/fund-accounting/transfers                              1.3 kB          133 kB
+├ ○ /finance/general-ledger                                         2.44 kB         142 kB
+├ ƒ /finance/general-ledger/[id]                                    3.54 kB         154 kB
+├ ○ /finance/general-ledger/new                                     3.86 kB         141 kB
+├ ○ /finance/reports                                                2.82 kB         132 kB
+├ ○ /finance/reports/balance-sheet                                  2.5 kB          132 kB
+├ ○ /finance/reports/budget-vs-actual                               3.08 kB         201 kB
+├ ƒ /finance/reports/custom/[id]/edit                               808 B           133 kB
+├ ○ /finance/reports/custom/new                                     791 B           133 kB
+├ ○ /finance/reports/functional-expenses                            2.83 kB         132 kB
+├ ○ /finance/reports/income-statement                               2.52 kB         132 kB
+├ ○ /finance/tuition-credits                                        2 kB            129 kB
+├ ○ /finance/tuition-credits/batches                                1.55 kB         156 kB
+├ ƒ /finance/tuition-credits/batches/[id]                           2.22 kB         157 kB
+├ ○ /finance/tuition-credits/batches/new                            1.47 kB         156 kB
+├ ○ /finance/tuition-credits/credits                                1.92 kB         156 kB
+├ ƒ /finance/tuition-credits/credits/[id]                           1.94 kB         156 kB
+├ ƒ /finance/tuition-credits/credits/[id]/edit                      1.71 kB         156 kB
+├ ○ /finance/tuition-credits/credits/new                            1.33 kB         156 kB
+├ ○ /finance/tuition-credits/payment-batches                        1.1 kB          156 kB
+├ ƒ /finance/tuition-credits/payment-batches/[id]                   2.64 kB         136 kB
+├ ƒ /finance/tuition-credits/payment-batches/[id]/generate-payfile  2.12 kB         136 kB
+├ ƒ /finance/tuition-credits/payment-batches/[id]/process           1.85 kB         136 kB
+├ ○ /finance/tuition-credits/payments                               1.72 kB         156 kB
+├ ○ /finance/tuition-credits/payments/new                           1.64 kB         156 kB
+├ ○ /finance/tuition-credits/providers                              1.46 kB         156 kB
+├ ƒ /finance/tuition-credits/providers/[id]                         1.89 kB         158 kB
+├ ƒ /finance/tuition-credits/providers/[id]/communication           3.13 kB         137 kB
+├ ƒ /finance/tuition-credits/providers/[id]/edit                    1.35 kB         156 kB
+├ ƒ /finance/tuition-credits/providers/[id]/payments                1.08 kB         137 kB
+├ ƒ /finance/tuition-credits/providers/[id]/quality-grant           2.29 kB         129 kB
+├ ƒ /finance/tuition-credits/providers/[id]/tax-information         2.04 kB         129 kB
+├ ○ /finance/tuition-credits/providers/new                          1.2 kB          156 kB
+├ ○ /finance/tuition-credits/providers/onboarding                   800 B           155 kB
+├ ○ /finance/tuition-credits/providers/payments/new-batch           2.67 kB         130 kB
+├ ○ /finance/tuition-credits/providers/payments/reconciliation      2.85 kB         137 kB
+└ ○ /finance/tuition-credits/providers/portal                       2.27 kB         129 kB
++ First Load JS shared by all                                       87.1 kB
+  ├ chunks/7023-423bfdbd003e1e26.js                                 31.5 kB
+  ├ chunks/fd9d1056-e8d05843eb22879c.js                             53.7 kB
+  └ other shared chunks (total)                                     1.96 kB
+
+
+ƒ Middleware                                                        49.2 kB
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

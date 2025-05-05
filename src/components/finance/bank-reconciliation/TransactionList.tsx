@@ -5,19 +5,28 @@ import React from 'react';
 import { useState, useEffect } from 'react';
 import { BankTransaction, BankAccount, TransactionMatchStatus } from '@/types/finance';
 import { financeService } from '@/lib/finance/finance-service';
+import { bankReconciliationService } from '@/lib/finance/bank-reconciliation-service';
 
 interface TransactionListProps {
-  bankAccountId: string;
+  bankAccountId?: string;
   isReconciliation?: boolean;
   reconciliationId?: string;
   onSelectTransaction?: (transaction: BankTransaction) => void;
+  // New props for ReconciliationDetail
+  transactions?: BankTransaction[];
+  onSelect?: (transaction: BankTransaction) => void;
+  showReconcileButton?: boolean;
 }
 
 export default function TransactionList({ 
   bankAccountId,
   isReconciliation = false,
   reconciliationId,
-  onSelectTransaction 
+  onSelectTransaction,
+  // New props
+  transactions: propTransactions,
+  onSelect,
+  showReconcileButton
 }: TransactionListProps) {
   const [transactions, setTransactions] = useState<BankTransaction[]>([]);
   const [bankAccount, setBankAccount] = useState<BankAccount | null>(null);
@@ -36,6 +45,20 @@ export default function TransactionList({
   }>({ key: 'date', direction: 'desc' });
 
   useEffect(() => {
+    // If transactions are provided directly as a prop, use those
+    if (propTransactions) {
+      setTransactions(propTransactions);
+      setLoading(false);
+      return;
+    }
+    
+    // No bankAccountId, nothing to fetch
+    if (!bankAccountId) {
+      setTransactions([]);
+      setLoading(false);
+      return;
+    }
+    
     async function fetchData() {
       try {
         setLoading(true);
@@ -48,14 +71,14 @@ export default function TransactionList({
         let allTransactions: BankTransaction[];
         
         if (isReconciliation && reconciliationId) {
-          allTransactions = await financeService.getReconciliationTransactions(reconciliationId);
+          allTransactions = await bankReconciliationService.getReconciliationTransactions(reconciliationId);
         } else {
           allTransactions = await financeService.getBankTransactionsByAccount(bankAccountId);
         }
         
         // Apply filters
         let filteredTransactions = [...allTransactions];
-        
+      
         if (filter.startDate) {
           const startDate = new Date(filter.startDate);
           filteredTransactions = filteredTransactions.filter(t => new Date(t.date) >= startDate);
@@ -120,7 +143,7 @@ export default function TransactionList({
     }
 
     fetchData();
-  }, [bankAccountId, isReconciliation, reconciliationId, filter, sortConfig]);
+  }, [bankAccountId, isReconciliation, reconciliationId, filter, sortConfig, propTransactions]);
 
   const handleSort = (key: string) => {
     setSortConfig(prev => ({
@@ -130,7 +153,9 @@ export default function TransactionList({
   };
 
   const handleTransactionSelect = (transaction: BankTransaction) => {
-    if (onSelectTransaction) {
+    if (onSelect) {
+      onSelect(transaction);
+    } else if (onSelectTransaction) {
       onSelectTransaction(transaction);
     }
   };
@@ -345,7 +370,7 @@ export default function TransactionList({
                 <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
-                {!isReconciliation && (
+                {(showReconcileButton !== undefined ? showReconcileButton : !isReconciliation) && (
                   <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Actions
                   </th>
@@ -380,7 +405,7 @@ export default function TransactionList({
                       {transaction.matchStatus.replace('_', ' ')}
                     </span>
                   </td>
-                  {!isReconciliation && (
+                  {(showReconcileButton !== undefined ? showReconcileButton : !isReconciliation) && (
                     <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
                       <button
                         onClick={(e) => {
@@ -389,7 +414,7 @@ export default function TransactionList({
                         }}
                         className="text-blue-600 hover:text-blue-900"
                       >
-                        View
+                        {showReconcileButton ? 'Reconcile' : 'View'}
                       </button>
                     </td>
                   )}

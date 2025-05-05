@@ -89,7 +89,7 @@ export default function TransactionDetail() {
     if (!user) return;
     
     try {
-      await approveTransaction(id, user.id);
+      await approveTransaction(id);
     } catch (error) {
       console.error('Error approving transaction:', error);
     }

@@ -59,7 +59,7 @@ export default function BudgetItemList({ budgetId, editable = false }: BudgetIte
   
   // Handle delete confirmation
   const handleConfirmDelete = async (itemId: string) => {
-    await deleteBudgetItem(budgetId, itemId);
+    await deleteBudgetItem(itemId);
     setShowConfirmDelete(null);
   };
   
@@ -82,13 +82,16 @@ export default function BudgetItemList({ budgetId, editable = false }: BudgetIte
   
   // Get period values from budget item
   const getPeriodValues = (item: BudgetItem, periodType: BudgetPeriodType) => {
-    if (!item.periodValues) return [];
+    if (!item.periodDistribution) return [];
+    
+    // Extract values from periodDistribution
+    const periodValues = item.periodDistribution.map(period => period.amount);
     
     switch (periodType) {
       case BudgetPeriodType.MONTHLY:
-        return item.periodValues.slice(0, 12);
+        return periodValues.slice(0, 12);
       case BudgetPeriodType.QUARTERLY:
-        return item.periodValues.slice(0, 4);
+        return periodValues.slice(0, 4);
       case BudgetPeriodType.ANNUAL:
         return [item.amount];
       default:

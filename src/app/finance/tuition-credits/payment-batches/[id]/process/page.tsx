@@ -40,7 +40,7 @@ export default function ProcessProviderPaymentBatchPage() {
     setProcessingError(null);
     
     try {
-      await processProviderPaymentBatch(batchId, 'current-user'); // Would normally use actual user ID from auth
+      await processProviderPaymentBatch(batchId); // Process the payment batch
       router.push(`/finance/tuition-credits/payment-batches/${batchId}`);
     } catch (error: any) {
       setProcessingError(error.message || 'Failed to process payment batch');

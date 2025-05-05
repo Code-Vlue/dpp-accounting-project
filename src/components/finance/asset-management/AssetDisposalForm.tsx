@@ -69,7 +69,7 @@ const AssetDisposalForm: React.FC<AssetDisposalFormProps> = ({ assetId }) => {
     if (name === 'disposalMethod' && value !== AssetDisposalMethod.SOLD) {
       setFormData(prev => ({
         ...prev,
-        [name]: value,
+        disposalMethod: value as AssetDisposalMethod, // Use type assertion to ensure correct type
         buyerId: '',
         salePrice: 0
       }));

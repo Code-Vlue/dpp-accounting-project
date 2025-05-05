@@ -11,23 +11,37 @@ interface ProviderListProps {
   providerType?: ProviderType;
   status?: ProviderStatus;
   qualityRating?: ProviderQualityRating;
+  providers?: Provider[];
+  onView?: (id: string) => void;
+  onEdit?: (id: string) => void;
+  onCreateCredit?: (id: string) => void;
 }
 
 export default function ProviderList({ 
   searchTerm = '', 
   providerType, 
   status, 
-  qualityRating 
+  qualityRating,
+  providers: externalProviders,
+  onView,
+  onEdit,
+  onCreateCredit
 }: ProviderListProps) {
-  const { providers, providersLoading, providerError, fetchProviders } = useFinanceStore();
+  const { providers: storeProviders, providersLoading, providerError, fetchProviders } = useFinanceStore();
+  
+  // Use externally provided providers if available, otherwise use the ones from the store
+  const providersList = externalProviders || storeProviders;
   const [filteredProviders, setFilteredProviders] = useState<Provider[]>([]);
   
   useEffect(() => {
-    fetchProviders();
-  }, [fetchProviders]);
+    // Only fetch providers from the store if we're not using external providers
+    if (!externalProviders) {
+      fetchProviders();
+    }
+  }, [fetchProviders, externalProviders]);
   
   useEffect(() => {
-    let filtered = [...providers];
+    let filtered = [...providersList];
     
     // Filter by search term if provided
     if (searchTerm) {
@@ -56,13 +70,15 @@ export default function ProviderList({
     }
     
     setFilteredProviders(filtered);
-  }, [providers, searchTerm, providerType, status, qualityRating]);
+  }, [providersList, searchTerm, providerType, status, qualityRating]);
   
-  if (providersLoading) {
+  // Only show loading if we're not using external providers and the store is still loading
+  if (!externalProviders && providersLoading) {
     return <div className="p-4 text-center">Loading providers...</div>;
   }
   
-  if (providerError) {
+  // Only show error if we're not using external providers and there's an error from the store
+  if (!externalProviders && providerError) {
     return <div className="p-4 text-center text-red-500">Error loading providers: {providerError}</div>;
   }
   
@@ -113,24 +129,54 @@ export default function ProviderList({
               </td>
               <td className="py-2 px-4 border-b">
                 <div className="flex space-x-2">
-                  <Link 
-                    href={`/finance/tuition-credits/providers/${provider.id}`}
-                    className="text-blue-600 hover:text-blue-800"
-                  >
-                    View
-                  </Link>
-                  <Link 
-                    href={`/finance/tuition-credits/providers/${provider.id}/edit`}
-                    className="text-green-600 hover:text-green-800"
-                  >
-                    Edit
-                  </Link>
-                  <Link 
-                    href={`/finance/tuition-credits/providers/${provider.id}/credits`}
-                    className="text-purple-600 hover:text-purple-800"
-                  >
-                    Credits
-                  </Link>
+                  {onView ? (
+                    <button 
+                      onClick={() => onView(provider.id)}
+                      className="text-blue-600 hover:text-blue-800"
+                    >
+                      View
+                    </button>
+                  ) : (
+                    <Link 
+                      href={`/finance/tuition-credits/providers/${provider.id}`}
+                      className="text-blue-600 hover:text-blue-800"
+                    >
+                      View
+                    </Link>
+                  )}
+                  
+                  {onEdit ? (
+                    <button 
+                      onClick={() => onEdit(provider.id)}
+                      className="text-green-600 hover:text-green-800"
+                    >
+                      Edit
+                    </button>
+                  ) : (
+                    <Link 
+                      href={`/finance/tuition-credits/providers/${provider.id}/edit`}
+                      className="text-green-600 hover:text-green-800"
+                    >
+                      Edit
+                    </Link>
+                  )}
+                  
+                  {onCreateCredit ? (
+                    <button 
+                      onClick={() => onCreateCredit(provider.id)}
+                      className="text-purple-600 hover:text-purple-800"
+                    >
+                      Credits
+                    </button>
+                  ) : (
+                    <Link 
+                      href={`/finance/tuition-credits/providers/${provider.id}/credits`}
+                      className="text-purple-600 hover:text-purple-800"
+                    >
+                      Credits
+                    </Link>
+                  )}
+                  
                   <Link 
                     href={`/finance/tuition-credits/providers/${provider.id}/payments`}
                     className="text-indigo-600 hover:text-indigo-800"

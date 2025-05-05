@@ -34,7 +34,7 @@ export default function TuitionCreditsPage() {
   const activeProviders = providers.filter(p => p.providerStatus === ProviderStatus.ACTIVE).length;
   const pendingCredits = tuitionCredits.filter(c => c.creditStatus === TuitionCreditStatus.PENDING_APPROVAL).length;
   const approvedCredits = tuitionCredits.filter(c => c.creditStatus === TuitionCreditStatus.APPROVED).length;
-  const processingBatches = tuitionCreditBatches.filter(b => b.status === TuitionCreditStatus.PROCESSING).length;
+  const processingBatches = tuitionCreditBatches.filter(b => b.status === TuitionCreditStatus.PROCESSED).length;
   
   const totalCreditAmount = tuitionCredits.reduce((sum, credit) => sum + credit.dppPortion, 0);
   const pendingAmount = tuitionCredits

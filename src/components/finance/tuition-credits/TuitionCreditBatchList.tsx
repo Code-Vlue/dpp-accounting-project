@@ -11,13 +11,19 @@ interface TuitionCreditBatchListProps {
   status?: TuitionCreditStatus;
   startDate?: Date;
   endDate?: Date;
+  batches: TuitionCreditBatch[];
+  onView?: (id: string) => void;
+  onProcess?: (id: string) => void;
 }
 
 export default function TuitionCreditBatchList({ 
   searchTerm = '', 
   status, 
   startDate,
-  endDate
+  endDate,
+  batches: propBatches,
+  onView,
+  onProcess
 }: TuitionCreditBatchListProps) {
   const { 
     tuitionCreditBatches, 
@@ -29,11 +35,15 @@ export default function TuitionCreditBatchList({
   const [filteredBatches, setFilteredBatches] = useState<TuitionCreditBatch[]>([]);
   
   useEffect(() => {
-    fetchTuitionCreditBatches();
-  }, [fetchTuitionCreditBatches]);
+    // Only fetch batches if we're not given them as props
+    if (!propBatches) {
+      fetchTuitionCreditBatches();
+    }
+  }, [fetchTuitionCreditBatches, propBatches]);
   
   useEffect(() => {
-    let filtered = [...tuitionCreditBatches];
+    // Use provided batches if available, otherwise use store batches
+    let filtered = [...(propBatches || tuitionCreditBatches)];
     
     // Filter by search term if provided
     if (searchTerm) {
@@ -59,13 +69,15 @@ export default function TuitionCreditBatchList({
     }
     
     setFilteredBatches(filtered);
-  }, [tuitionCreditBatches, searchTerm, status, startDate, endDate]);
+  }, [propBatches, tuitionCreditBatches, searchTerm, status, startDate, endDate]);
   
-  if (tuitionCreditBatchesLoading) {
+  // Only show loading if we're not given batches as props and we're loading from the store
+  if (!propBatches && tuitionCreditBatchesLoading) {
     return <div className="p-4 text-center">Loading tuition credit batches...</div>;
   }
   
-  if (tuitionCreditBatchesError) {
+  // Only show error if we're not given batches as props and there's an error from the store
+  if (!propBatches && tuitionCreditBatchesError) {
     return <div className="p-4 text-center text-red-500">Error loading batches: {tuitionCreditBatchesError}</div>;
   }
   
@@ -113,12 +125,21 @@ export default function TuitionCreditBatchList({
               </td>
               <td className="py-2 px-4 border-b">
                 <div className="flex space-x-2">
-                  <Link 
-                    href={`/finance/tuition-credits/batches/${batch.id}`}
-                    className="text-blue-600 hover:text-blue-800"
-                  >
-                    View
-                  </Link>
+                  {onView ? (
+                    <button 
+                      onClick={() => onView(batch.id)}
+                      className="text-blue-600 hover:text-blue-800"
+                    >
+                      View
+                    </button>
+                  ) : (
+                    <Link 
+                      href={`/finance/tuition-credits/batches/${batch.id}`}
+                      className="text-blue-600 hover:text-blue-800"
+                    >
+                      View
+                    </Link>
+                  )}
                   {batch.status === TuitionCreditStatus.DRAFT && (
                     <Link 
                       href={`/finance/tuition-credits/batches/${batch.id}/edit`}
@@ -136,12 +157,21 @@ export default function TuitionCreditBatchList({
                     </Link>
                   )}
                   {batch.status === TuitionCreditStatus.APPROVED && (
-                    <Link 
-                      href={`/finance/tuition-credits/batches/${batch.id}/process-payment`}
-                      className="text-purple-600 hover:text-purple-800"
-                    >
-                      Process
-                    </Link>
+                    onProcess ? (
+                      <button 
+                        onClick={() => onProcess(batch.id)}
+                        className="text-purple-600 hover:text-purple-800"
+                      >
+                        Process
+                      </button>
+                    ) : (
+                      <Link 
+                        href={`/finance/tuition-credits/batches/${batch.id}/process-payment`}
+                        className="text-purple-600 hover:text-purple-800"
+                      >
+                        Process
+                      </Link>
+                    )
                   )}
                 </div>
               </td>

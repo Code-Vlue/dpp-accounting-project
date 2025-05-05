@@ -4,7 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { changePassword, getUserAttributes } from '@/lib/auth/cognito';
-import { CognitoUserAttributes } from '@/lib/auth/types';
+import { CognitoUserAttributes, UserSession } from '@/lib/auth/types';
 
 export default function ProfileForm() {
   const { data: session } = useSession();
@@ -21,9 +21,13 @@ export default function ProfileForm() {
   useEffect(() => {
     // Pre-populate form with user data from session
     if (session?.user) {
-      setFirstName(session.user.firstName || '');
-      setLastName(session.user.lastName || '');
-      setOrganization(session.user.organization || '');
+      // Cast the session to our custom UserSession type
+      const userSession = session as unknown as UserSession;
+      
+      // Now we can safely access the custom properties
+      setFirstName(userSession.user.firstName ?? '');
+      setLastName(userSession.user.lastName ?? '');
+      setOrganization(userSession.user.organization ?? '');
     }
 
     // Fetch additional user attributes from Cognito
@@ -216,7 +220,7 @@ export default function ProfileForm() {
               <input
                 id="role"
                 type="text"
-                value={session?.user?.role || ''}
+                value={(session as unknown as UserSession)?.user?.role ?? ''}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-accent-blue bg-gray-50"
                 readOnly
               />

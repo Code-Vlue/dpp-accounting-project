@@ -194,13 +194,18 @@ export function getUserAttributes(): Promise<CognitoUserAttributes> {
         return;
       }
 
-      const userAttributes: { [key: string]: string } = {};
+      const userAttributes: { [key: string]: string } = {
+        sub: '',
+        email: '',
+        email_verified: 'false'
+      };
       
       attributes.forEach((attribute) => {
         userAttributes[attribute.getName()] = attribute.getValue();
       });
 
-      resolve(userAttributes as CognitoUserAttributes);
+      // Cast to unknown first, then to the required type
+      resolve(userAttributes as unknown as CognitoUserAttributes);
     });
   });
 }
@@ -337,7 +342,8 @@ export function verifyMFA(code: string): Promise<string> {
   return new Promise((resolve, reject) => {
     cognitoUser.verifySoftwareToken(code, 'MFA', {
       onSuccess: (session) => {
-        resolve(session);
+        // Convert the session to a string if needed
+        resolve(typeof session === 'string' ? session : JSON.stringify(session));
       },
       onFailure: (err) => {
         reject(err);

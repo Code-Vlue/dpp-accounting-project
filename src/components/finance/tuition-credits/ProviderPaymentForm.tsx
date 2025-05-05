@@ -17,13 +17,39 @@ interface ProviderPaymentFormProps {
   providerId?: string;
   batchId?: string;
   isEdit?: boolean;
+  providers?: Provider[];
+  eligibleCredits?: TuitionCredit[];
+  paymentDraft?: Partial<{
+    providerId: string;
+    amount: number;
+    date: Date;
+    method: PaymentMethod;
+    description: string;
+    reference: string;
+    accountId: string;
+    tuitionCreditIds: string[];
+    qualityImprovementGrant: boolean;
+    grantAmount: number;
+    grantReason: string;
+    notes: string;
+    paymentPriority: PaymentPriority;
+  }>;
+  onUpdatePayment?: (field: string, value: any) => void;
+  onSubmit?: () => Promise<void>;
+  loading?: boolean;
 }
 
 export default function ProviderPaymentForm({ 
   paymentId, 
   providerId, 
   batchId,
-  isEdit = false 
+  isEdit = false,
+  providers: propProviders,
+  eligibleCredits: propEligibleCredits,
+  paymentDraft: propPaymentDraft,
+  onUpdatePayment,
+  onSubmit: externalSubmit,
+  loading: propLoading
 }: ProviderPaymentFormProps) {
   const router = useRouter();
   const { 
@@ -189,16 +215,21 @@ export default function ProviderPaymentForm({
         router.push(`/finance/tuition-credits/payments/${paymentId}`);
       } else {
         // Create new payment
-        const newPayment = await createProviderPayment({
+        const paymentData = {
           ...formData,
           status: PaymentStatus.PENDING,
-          batchId: batchId
-        });
+          batchId: batchId,
+          createdById: 'current-user-id', // This should be fetched from authentication context
+          createdAt: new Date(),
+          updatedAt: new Date()
+        };
+        await createProviderPayment(paymentData);
         
+        // Navigate to the batch or back to payments list
         if (batchId) {
           router.push(`/finance/tuition-credits/batches/${batchId}`);
         } else {
-          router.push(`/finance/tuition-credits/payments/${newPayment.id}`);
+          router.push(`/finance/tuition-credits/payments`);
         }
       }
     } catch (error: any) {

@@ -35,7 +35,7 @@ export default function NewProviderPaymentPage() {
     
     // If providerId is provided in URL, pre-populate the draft
     if (providerId) {
-      updateProviderPaymentDraft({ providerId });
+      updateProviderPaymentDraft('providerId', providerId);
       
       // Find all processed credits for this provider
       const providerCredits = tuitionCredits.filter(credit => 
@@ -47,10 +47,9 @@ export default function NewProviderPaymentPage() {
         const creditIds = providerCredits.map(credit => credit.id);
         const totalAmount = providerCredits.reduce((sum, credit) => sum + credit.dppPortion, 0);
         
-        updateProviderPaymentDraft({ 
-          tuitionCreditIds: creditIds,
-          amount: totalAmount
-        });
+        // Update credit IDs and amount separately
+        updateProviderPaymentDraft('tuitionCreditIds', creditIds);
+        updateProviderPaymentDraft('amount', totalAmount);
       }
     }
     
@@ -86,11 +85,10 @@ export default function NewProviderPaymentPage() {
           const providerId = providerIds[0];
           const providerData = creditsByProvider[providerId];
           
-          updateProviderPaymentDraft({
-            providerId,
-            tuitionCreditIds: providerData.credits.map(credit => credit.id),
-            amount: providerData.totalAmount
-          });
+          // Update provider ID, credit IDs and amount separately
+          updateProviderPaymentDraft('providerId', providerId);
+          updateProviderPaymentDraft('tuitionCreditIds', providerData.credits.map(credit => credit.id));
+          updateProviderPaymentDraft('amount', providerData.totalAmount);
         }
       }
     }

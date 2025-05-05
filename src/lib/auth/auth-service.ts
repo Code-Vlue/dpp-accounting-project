@@ -383,14 +383,22 @@ class AuthService {
           });
         } else if (preferredMFA === 'TOTP') {
           // Set up TOTP MFA
-          cognitoUser.associateSoftwareToken({
-            onSuccess: (session) => {
-              resolve(session);
-            },
-            onFailure: (err) => {
-              reject(err);
-            }
-          });
+          try {
+            // Create an object with the required callbacks
+            const callbacks = {
+              associateSecretCode: (secretCode: string) => {
+                resolve({ secretCode });
+              },
+              onFailure: (err: any) => {
+                reject(err);
+              }
+            };
+            
+            // Call the method with the properly structured callbacks
+            cognitoUser.associateSoftwareToken(callbacks);
+          } catch (error) {
+            reject(error);
+          }
         } else {
           reject(new Error('Invalid MFA method'));
         }

@@ -181,7 +181,10 @@ export default function AccountForm({ accountId, isEditing = false }: AccountFor
         await updateAccount(accountId, formData);
         router.push(`/finance/chart-of-accounts/${accountId}`);
       } else {
-        const newAccount = await createAccount(formData as Omit<ChartOfAccount, 'id' | 'createdAt' | 'updatedAt'>);
+        const createdAccount = await createAccount(formData as Omit<ChartOfAccount, 'id'>);
+        // Get the most recent account added to the list
+        const accounts = useFinanceStore.getState().accounts;
+        const newAccount = accounts[accounts.length - 1];
         router.push(`/finance/chart-of-accounts/${newAccount.id}`);
       }
     } catch (error) {

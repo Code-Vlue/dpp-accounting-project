@@ -111,7 +111,11 @@ export default function TuitionCreditDetailPage({ params }: { params: { id: stri
               <CardDescription>Details of the tuition credit</CardDescription>
             </CardHeader>
             <CardContent>
-              <TuitionCreditDetail credit={selectedTuitionCredit} provider={selectedProvider} />
+              <TuitionCreditDetail 
+              creditId={creditId} 
+              credit={selectedTuitionCredit} 
+              provider={selectedProvider} 
+            />
             </CardContent>
             {selectedTuitionCredit.creditStatus === TuitionCreditStatus.PENDING_APPROVAL && (
               <CardFooter className="flex justify-end gap-2">

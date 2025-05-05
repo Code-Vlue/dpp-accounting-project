@@ -4,7 +4,7 @@ import React from 'react';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useFinanceStore } from '@/store/finance-store';
-import { PaymentMethod, ReceivablePayment, Invoice } from '@/types/finance';
+import { PaymentMethod, ReceivablePayment, Invoice, PaymentStatus } from '@/types/finance';
 
 interface PaymentFormProps {
   invoiceId: string;
@@ -104,12 +104,12 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ invoiceId }) => {
     
     try {
       // Create the payment object
-      const paymentData: Omit<ReceivablePayment, 'id' | 'createdAt' | 'updatedAt' | 'processedAt' | 'receiptSent' | 'receiptSentAt'> = {
+      const paymentData = {
         invoiceId,
         amount: parseFloat(paymentAmount),
         date: new Date(paymentDate),
         method: paymentMethod,
-        status: 'PENDING',
+        status: PaymentStatus.PENDING,
         referenceNumber: referenceNumber || undefined,
         accountId,
         checkNumber: paymentMethod === PaymentMethod.CHECK ? checkNumber : undefined,
@@ -117,6 +117,10 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ invoiceId }) => {
         createdById: 'current-user', // This would come from auth context
         transactionId: undefined,
         depositDate: new Date(paymentDate),
+        // Add required properties
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        billId: '' // This is a placeholder since this is a receivable payment, not a bill payment
       };
       
       // Submit payment

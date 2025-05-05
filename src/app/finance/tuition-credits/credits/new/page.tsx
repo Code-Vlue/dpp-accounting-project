@@ -29,7 +29,7 @@ export default function NewTuitionCreditPage() {
     
     // If providerId is provided in URL, pre-populate the draft
     if (providerId) {
-      updateTuitionCreditDraft({ providerId });
+      updateTuitionCreditDraft('providerId', providerId);
     }
   }, [fetchProviders, resetTuitionCreditDraft, providerId, updateTuitionCreditDraft]);
 

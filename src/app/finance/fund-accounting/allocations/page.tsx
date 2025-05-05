@@ -27,8 +27,8 @@ const FundAllocationsPage: React.FC = () => {
   };
 
   // Helper to get fund name from its ID
-  const getFundName = (fundId: string | undefined) => {
-    if (!fundId) return 'Unknown';
+  const getFundName = (fundId: string | unknown) => {
+    if (!fundId || typeof fundId !== 'string') return 'Unknown';
     const fund = funds.find(f => f.id === fundId);
     return fund ? fund.name : 'Unknown';
   };

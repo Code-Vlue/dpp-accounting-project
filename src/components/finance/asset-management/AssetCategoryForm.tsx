@@ -3,7 +3,7 @@
 // src/components/finance/asset-management/AssetCategoryForm.tsx
 import React, { useState, useEffect } from 'react';
 import { useFinanceStore } from '@/store/finance-store';
-import { AssetCategory } from '@/types/finance';
+import { AssetCategory, DepreciationMethod, AssetType } from '@/types/finance';
 
 interface AssetCategoryFormProps {
   categoryId?: string;
@@ -18,13 +18,23 @@ export function AssetCategoryForm({
 }: AssetCategoryFormProps) {
   const { getAssetCategoryById, createAssetCategory, updateAssetCategory } = useFinanceStore();
 
-  const [formData, setFormData] = useState<Partial<AssetCategory>>({
+  // Extend the form data with properties not in the AssetCategory interface
+  interface AssetCategoryFormData extends Partial<AssetCategory> {
+    defaultSalvageValuePercent?: number;
+    isActive?: boolean;
+  }
+
+  const [formData, setFormData] = useState<AssetCategoryFormData>({
     name: '',
     description: '',
     defaultUsefulLifeYears: 5,
-    defaultDepreciationMethod: 'straight-line',
+    defaultDepreciationMethod: DepreciationMethod.STRAIGHT_LINE,
     defaultSalvageValuePercent: 10,
     isActive: true,
+    // Required properties from AssetCategory interface that need default values
+    defaultType: 'EQUIPMENT' as AssetType, // Using string assertion as a workaround
+    defaultDepreciationAccountId: '',
+    defaultAssetAccountId: '',
   });
 
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
@@ -32,16 +42,28 @@ export function AssetCategoryForm({
   const [isLoading, setIsLoading] = useState(!!categoryId);
 
   useEffect(() => {
-    if (categoryId) {
-      // Fetch the category if editing an existing one
-      const category = getAssetCategoryById(categoryId);
-      if (category) {
-        setFormData({
-          ...category,
-        });
-        setIsLoading(false);
+    async function fetchCategory() {
+      if (categoryId) {
+        try {
+          // Fetch the category if editing an existing one
+          const category = await getAssetCategoryById(categoryId);
+          if (category) {
+            setFormData({
+              ...category,
+              // Set form-specific fields that aren't part of the AssetCategory interface
+              defaultSalvageValuePercent: 10, // Default value
+              isActive: true,
+            });
+          }
+        } catch (error) {
+          console.error('Error fetching asset category:', error);
+        } finally {
+          setIsLoading(false);
+        }
       }
     }
+    
+    fetchCategory();
   }, [categoryId, getAssetCategoryById]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -176,10 +198,10 @@ export function AssetCategoryForm({
                 formErrors.defaultDepreciationMethod ? 'border-red-500' : 'border-gray-300'
               } shadow-sm px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500`}
             >
-              <option value="straight-line">Straight Line</option>
-              <option value="double-declining">Double Declining Balance</option>
-              <option value="sum-of-years">Sum of Years Digits</option>
-              <option value="units-of-production">Units of Production</option>
+              <option value={DepreciationMethod.STRAIGHT_LINE}>Straight Line</option>
+              <option value={DepreciationMethod.DOUBLE_DECLINING_BALANCE}>Double Declining Balance</option>
+              <option value={DepreciationMethod.SUM_OF_YEARS_DIGITS}>Sum of Years Digits</option>
+              <option value={DepreciationMethod.UNITS_OF_PRODUCTION}>Units of Production</option>
             </select>
             {formErrors.defaultDepreciationMethod && (
               <p className="mt-1 text-sm text-red-600">{formErrors.defaultDepreciationMethod}</p>

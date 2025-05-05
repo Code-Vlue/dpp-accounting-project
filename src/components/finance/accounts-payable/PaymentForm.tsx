@@ -4,7 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useFinanceStore } from '@/store/finance-store';
-import { PaymentMethod } from '@/types/finance';
+import { PaymentMethod, PaymentStatus } from '@/types/finance';
 
 interface PaymentFormProps {
   billId: string;
@@ -98,8 +98,10 @@ export default function PaymentForm({ billId }: PaymentFormProps) {
         accountId: formData.accountId,
         checkNumber: formData.method === PaymentMethod.CHECK ? formData.checkNumber : undefined,
         notes: formData.notes,
-        status: 'COMPLETED',
-        createdById: 'user1' // TODO: Replace with actual user ID
+        status: PaymentStatus.COMPLETED,
+        createdById: 'user1', // TODO: Replace with actual user ID
+        createdAt: new Date(),
+        updatedAt: new Date()
       });
       
       // Redirect back to bill detail

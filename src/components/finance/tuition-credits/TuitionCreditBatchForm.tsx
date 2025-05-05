@@ -9,9 +9,42 @@ import { TuitionCredit, TuitionCreditStatus, Provider } from '@/types/finance';
 interface TuitionCreditBatchFormProps {
   batchId?: string;
   isEdit?: boolean;
+  batchData?: {
+    name: string;
+    description: string;
+    periodStart: Date;
+    periodEnd: Date;
+    status: TuitionCreditStatus;
+    creditIds: string[];
+    providerIds: string[];
+    totalAmount: number;
+    notes?: string;
+  };
+  onUpdateBatch?: (updates: Partial<{
+    name: string;
+    description: string;
+    periodStart: Date;
+    periodEnd: Date;
+    providerIds: string[];
+    creditIds: string[];
+    notes: string;
+  }>) => void;
+  onSubmit?: () => Promise<void>;
+  eligibleCredits?: TuitionCredit[];
+  providers?: Provider[];
+  loading?: boolean;
 }
 
-export default function TuitionCreditBatchForm({ batchId, isEdit = false }: TuitionCreditBatchFormProps) {
+export default function TuitionCreditBatchForm({ 
+  batchId, 
+  isEdit = false,
+  batchData,
+  onUpdateBatch,
+  onSubmit: externalSubmit,
+  eligibleCredits: propEligibleCredits,
+  providers: propProviders,
+  loading: propLoading
+}: TuitionCreditBatchFormProps) {
   const router = useRouter();
   const { 
     providers,
@@ -27,34 +60,40 @@ export default function TuitionCreditBatchForm({ batchId, isEdit = false }: Tuit
   } = useFinanceStore();
   
   // Filter for eligible credits (approved but not in a batch)
-  const eligibleCredits = tuitionCredits.filter(
+  // Use props if provided, otherwise fetch from store
+  const eligibleCredits = propEligibleCredits || tuitionCredits.filter(
     credit => credit.creditStatus === TuitionCreditStatus.APPROVED && !credit.paymentBatchId
   );
   
   const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    periodStart: new Date(),
-    periodEnd: new Date(new Date().setMonth(new Date().getMonth() + 1)),
-    providerIds: [] as string[],
-    creditIds: [] as string[],
+    name: batchData?.name || '',
+    description: batchData?.description || '',
+    periodStart: batchData?.periodStart || new Date(),
+    periodEnd: batchData?.periodEnd || new Date(new Date().setMonth(new Date().getMonth() + 1)),
+    providerIds: batchData?.providerIds || [] as string[],
+    creditIds: batchData?.creditIds || [] as string[],
     notes: ''
   });
   
-  const [selectedProviders, setSelectedProviders] = useState<string[]>([]);
-  const [selectedCredits, setSelectedCredits] = useState<string[]>([]);
+  const [selectedProviders, setSelectedProviders] = useState<string[]>(batchData?.providerIds || []);
+  const [selectedCredits, setSelectedCredits] = useState<string[]>(batchData?.creditIds || []);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Load providers, credits and batch data if editing
+  // Load providers, credits and batch data if editing, unless they are provided via props
   useEffect(() => {
-    fetchProviders();
-    fetchTuitionCredits();
+    if (!propProviders) {
+      fetchProviders();
+    }
+    
+    if (!propEligibleCredits) {
+      fetchTuitionCredits();
+    }
     
     if (isEdit && batchId) {
       fetchTuitionCreditBatchById(batchId);
     }
-  }, [fetchProviders, fetchTuitionCredits, fetchTuitionCreditBatchById, isEdit, batchId]);
+  }, [fetchProviders, fetchTuitionCredits, fetchTuitionCreditBatchById, isEdit, batchId, propProviders, propEligibleCredits]);
   
   // Populate form with batch data when it's loaded
   useEffect(() => {
@@ -88,42 +127,71 @@ export default function TuitionCreditBatchForm({ batchId, isEdit = false }: Tuit
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     
+    // Handle date fields
     if (name === 'periodStart' || name === 'periodEnd') {
+      // For form data, we want to store Date objects
+      const dateValue = new Date(value);
       setFormData({
         ...formData,
-        [name]: new Date(value)
+        [name]: dateValue
       });
+      
+      // If we have an onUpdateBatch callback, we need to make sure we're sending compatible types
+      if (onUpdateBatch) {
+        onUpdateBatch({ [name]: dateValue });
+      }
     } else {
+      // For non-date fields, just use the string value
       setFormData({
         ...formData,
         [name]: value
       });
+      
+      // Call the provided onUpdateBatch callback if available
+      if (onUpdateBatch) {
+        onUpdateBatch({ [name]: value });
+      }
     }
   };
   
   const handleProviderSelection = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedOptions = Array.from(e.target.selectedOptions).map(option => option.value);
     setSelectedProviders(selectedOptions);
-    setFormData({
-      ...formData,
-      providerIds: selectedOptions
-    });
     
     // Clear previously selected credits when providers change
     setSelectedCredits([]);
+    
+    const updates = {
+      providerIds: selectedOptions,
+      creditIds: []
+    };
+    
     setFormData(prev => ({
       ...prev,
-      creditIds: []
+      ...updates
     }));
+    
+    // Call the provided onUpdateBatch callback if available
+    if (onUpdateBatch) {
+      onUpdateBatch(updates);
+    }
   };
   
   const handleCreditSelection = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedOptions = Array.from(e.target.selectedOptions).map(option => option.value);
     setSelectedCredits(selectedOptions);
+    
+    const updates = { creditIds: selectedOptions };
+    
     setFormData({
       ...formData,
-      creditIds: selectedOptions
+      ...updates
     });
+    
+    // Call the provided onUpdateBatch callback if available
+    if (onUpdateBatch) {
+      onUpdateBatch(updates);
+    }
   };
   
   const handleSubmit = async (e: React.FormEvent) => {
@@ -138,6 +206,13 @@ export default function TuitionCreditBatchForm({ batchId, isEdit = false }: Tuit
     }
     
     try {
+      // If an external submit handler is provided, use that
+      if (externalSubmit) {
+        await externalSubmit();
+        return; // The external submit handler is responsible for navigation
+      }
+      
+      // Otherwise, use the built-in functionality
       if (isEdit && batchId) {
         // Update existing batch
         await updateTuitionCreditBatch(batchId, {
@@ -147,12 +222,18 @@ export default function TuitionCreditBatchForm({ batchId, isEdit = false }: Tuit
         router.push(`/finance/tuition-credits/batches/${batchId}`);
       } else {
         // Create new batch
-        const newBatch = await createTuitionCreditBatch({
+        const batchData = {
           ...formData,
           status: TuitionCreditStatus.DRAFT,
-          totalAmount
-        });
-        router.push(`/finance/tuition-credits/batches/${newBatch.id}`);
+          totalAmount,
+          createdById: 'current-user-id', // This should be fetched from authentication context
+          createdAt: new Date(),
+          updatedAt: new Date()
+        };
+        await createTuitionCreditBatch(batchData);
+        
+        // Navigate back to the batches list
+        router.push(`/finance/tuition-credits/batches`);
       }
     } catch (error: any) {
       setSubmitError(error.message || 'Failed to save tuition credit batch. Please try again.');
@@ -161,7 +242,7 @@ export default function TuitionCreditBatchForm({ batchId, isEdit = false }: Tuit
     }
   };
   
-  if (tuitionCreditBatchesLoading) {
+  if (propLoading || tuitionCreditBatchesLoading) {
     return <div className="p-4 text-center">Loading data...</div>;
   }
   
@@ -255,7 +336,7 @@ export default function TuitionCreditBatchForm({ batchId, isEdit = false }: Tuit
             onChange={handleProviderSelection}
             className="w-full p-2 border border-gray-300 rounded h-40"
           >
-            {providers.map(provider => (
+            {(propProviders || providers).map(provider => (
               <option key={provider.id} value={provider.id}>
                 {provider.name}
               </option>
@@ -344,7 +425,7 @@ export default function TuitionCreditBatchForm({ batchId, isEdit = false }: Tuit
 }
 
 // Helper function to get provider name
-function getProviderName(providerId: string, providers: Provider[]): string {
+function getProviderName(providerId: string, providers: Provider[] = []): string {
   const provider = providers.find(p => p.id === providerId);
   return provider ? provider.name : `Provider ${providerId.substring(0, 8)}`;
 }

@@ -9,9 +9,11 @@ import { TuitionCredit, TuitionCreditStatus, Provider } from '@/types/finance';
 
 interface TuitionCreditDetailProps {
   creditId: string;
+  credit?: TuitionCredit;
+  provider?: Provider;
 }
 
-export default function TuitionCreditDetail({ creditId }: TuitionCreditDetailProps) {
+export default function TuitionCreditDetail({ creditId, credit: propCredit, provider: propProvider }: TuitionCreditDetailProps) {
   const router = useRouter();
   const { 
     selectedTuitionCredit, 
@@ -35,16 +37,19 @@ export default function TuitionCreditDetail({ creditId }: TuitionCreditDetailPro
   const [actionError, setActionError] = useState<string | null>(null);
   
   useEffect(() => {
-    fetchTuitionCreditById(creditId);
-    fetchProviders();
-  }, [creditId, fetchTuitionCreditById, fetchProviders]);
+    // Only fetch if creditId is provided and propCredit is not provided
+    if (creditId && !propCredit) {
+      fetchTuitionCreditById(creditId);
+      fetchProviders();
+    }
+  }, [creditId, propCredit, fetchTuitionCreditById, fetchProviders]);
   
   const handleApprove = async () => {
     setIsApproving(true);
     setActionError(null);
     
     try {
-      await approveTuitionCredit(creditId);
+      await approveTuitionCredit(creditId, 'current-user-id');
       router.refresh();
     } catch (error: any) {
       setActionError(`Failed to approve tuition credit: ${error.message}`);
@@ -63,7 +68,7 @@ export default function TuitionCreditDetail({ creditId }: TuitionCreditDetailPro
     setActionError(null);
     
     try {
-      await rejectTuitionCredit(creditId, rejectionReason);
+      await rejectTuitionCredit(creditId, 'current-user-id', rejectionReason);
       setShowRejectionModal(false);
       router.refresh();
     } catch (error: any) {
@@ -93,20 +98,29 @@ export default function TuitionCreditDetail({ creditId }: TuitionCreditDetailPro
     }
   };
   
-  if (tuitionCreditsLoading) {
-    return <div className="p-4 text-center">Loading tuition credit data...</div>;
+  // Only show loading/error states when fetching data via creditId
+  if (creditId && !propCredit) {
+    if (tuitionCreditsLoading) {
+      return <div className="p-4 text-center">Loading tuition credit data...</div>;
+    }
+    
+    if (tuitionCreditsError) {
+      return <div className="p-4 text-center text-red-500">Error loading tuition credit: {tuitionCreditsError}</div>;
+    }
+    
+    if (!selectedTuitionCredit) {
+      return <div className="p-4 text-center text-amber-500">Tuition credit not found with ID: {creditId}</div>;
+    }
   }
   
-  if (tuitionCreditsError) {
-    return <div className="p-4 text-center text-red-500">Error loading tuition credit: {tuitionCreditsError}</div>;
-  }
+  // Use provided credit/provider props if available, otherwise use the ones from the store
+  const credit = propCredit || selectedTuitionCredit;
+  const provider = propProvider || (credit && providers.find(p => p.id === credit.providerId));
   
-  if (!selectedTuitionCredit) {
-    return <div className="p-4 text-center text-amber-500">Tuition credit not found with ID: {creditId}</div>;
+  // Safety check - if we don't have a credit to display, show an error
+  if (!credit) {
+    return <div className="p-4 text-center text-amber-500">No tuition credit data available</div>;
   }
-  
-  const credit = selectedTuitionCredit;
-  const provider = providers.find(p => p.id === credit.providerId);
   
   return (
     <div className="space-y-6">

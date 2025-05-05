@@ -1,7 +1,7 @@
 // /workspace/DPP-Project/src/components/finance/bank-reconciliation/TransactionMatchingPanel.tsx
 import { useState, useEffect } from 'react';
 import { useFinanceStore } from '@/store/finance-store';
-import { BankTransaction, BankTransactionMatch } from '@/types/finance';
+import { BankTransaction, Transaction } from '@/types/finance';
 
 interface TransactionMatchingPanelProps {
   transaction: BankTransaction;
@@ -25,7 +25,7 @@ export default function TransactionMatchingPanel({
   
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
-  const [matchCandidates, setMatchCandidates] = useState<BankTransactionMatch[]>([]);
+  const [matchCandidates, setMatchCandidates] = useState<Transaction[]>([]);
   const [selectedMatch, setSelectedMatch] = useState<string>('');
   const [adjustmentDescription, setAdjustmentDescription] = useState<string>('');
   const [adjustmentType, setAdjustmentType] = useState<'expense' | 'revenue'>('expense');
@@ -35,7 +35,7 @@ export default function TransactionMatchingPanel({
     const loadMatchCandidates = async () => {
       setIsLoading(true);
       try {
-        const candidates = await findMatchCandidates(transaction.id, reconciliationId);
+        const candidates = await findMatchCandidates(transaction.id);
         setMatchCandidates(candidates);
       } catch (err) {
         setError('Failed to load match candidates');
@@ -46,7 +46,7 @@ export default function TransactionMatchingPanel({
     };
     
     loadMatchCandidates();
-  }, [transaction.id, reconciliationId, findMatchCandidates]);
+  }, [transaction.id, findMatchCandidates]);
   
   const handleMatchSelect = (matchId: string) => {
     setSelectedMatch(matchId);
@@ -57,7 +57,7 @@ export default function TransactionMatchingPanel({
     
     setIsLoading(true);
     try {
-      await matchTransaction(transaction.id, selectedMatch, reconciliationId);
+      await matchTransaction(transaction.id, selectedMatch);
       onComplete();
     } catch (err) {
       setError('Failed to match transaction');
@@ -95,7 +95,7 @@ export default function TransactionMatchingPanel({
   const handleMarkAsReconciled = async () => {
     setIsLoading(true);
     try {
-      await markAsReconciled(transaction.id, reconciliationId);
+      await markAsReconciled(transaction.id);
       onComplete();
     } catch (err) {
       setError('Failed to mark transaction as reconciled');
@@ -125,7 +125,7 @@ export default function TransactionMatchingPanel({
       
       <div className="mb-4 p-3 bg-blue-50 rounded">
         <h4 className="font-medium mb-1">Bank Transaction</h4>
-        <p>Date: {new Date(transaction.transactionDate).toLocaleDateString()}</p>
+        <p>Date: {new Date(transaction.date).toLocaleDateString()}</p>
         <p>Description: {transaction.description}</p>
         <p className={`font-semibold ${transaction.amount < 0 ? 'text-red-600' : 'text-green-600'}`}>
           Amount: ${Math.abs(transaction.amount).toFixed(2)} {transaction.amount < 0 ? 'Debit' : 'Credit'}

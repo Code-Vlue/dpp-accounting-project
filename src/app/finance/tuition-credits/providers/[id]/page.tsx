@@ -19,7 +19,7 @@ export default function ProviderDetailPage({ params }: { params: { id: string } 
     selectedProvider, 
     tuitionCredits,
     fetchProviderById, 
-    fetchTuitionCreditsByProvider,
+    fetchTuitionCredits,
     providersLoading,
     tuitionCreditsLoading
   } = useFinanceStore();
@@ -27,9 +27,10 @@ export default function ProviderDetailPage({ params }: { params: { id: string } 
   useEffect(() => {
     if (providerId) {
       fetchProviderById(providerId);
-      fetchTuitionCreditsByProvider(providerId);
+      // Use the existing fetchTuitionCredits function with the provider ID
+      fetchTuitionCredits(providerId);
     }
-  }, [providerId, fetchProviderById, fetchTuitionCreditsByProvider]);
+  }, [providerId, fetchProviderById, fetchTuitionCredits]);
 
   const providerCredits = tuitionCredits.filter(credit => credit.providerId === providerId);
 

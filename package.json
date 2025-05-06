@@ -5,11 +5,10 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "postbuild": "node ./scripts/post-build.js",
-    "amplify-fix": "node ./scripts/amplify-ssr-fix.js",
     "start": "next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
+    "amplify-fix": "node ./scripts/amplify-direct-deploy.js",
     "deploy:dev": "bash ./scripts/deploy-to-aws.sh development",
     "deploy:staging": "bash ./scripts/deploy-to-aws.sh staging",
     "deploy:prod": "bash ./scripts/deploy-to-aws.sh production",

@@ -1,9 +1,39 @@
-// src/lib/auth/cognito-config.ts
+/**
+ * src/lib/auth/cognito-config.ts
+ * 
+ * Configuration for AWS Cognito authentication.
+ * Handles loading and configuring Cognito User Pool for authentication.
+ */
 import { CognitoUserPool } from 'amazon-cognito-identity-js';
 
+// Safely access environment variables or window globals
+const getUserPoolId = () => {
+  if (typeof window !== 'undefined') {
+    // Client-side: Try window globals first (for Amplify), then env vars
+    return (window as any).COGNITO_USER_POOL_ID || 
+           process.env.NEXT_PUBLIC_COGNITO_USER_POOL_ID || 
+           '';
+  } else {
+    // Server-side: Only use env vars
+    return process.env.NEXT_PUBLIC_COGNITO_USER_POOL_ID || '';
+  }
+};
+
+const getClientId = () => {
+  if (typeof window !== 'undefined') {
+    // Client-side: Try window globals first (for Amplify), then env vars
+    return (window as any).COGNITO_CLIENT_ID || 
+           process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID || 
+           '';
+  } else {
+    // Server-side: Only use env vars
+    return process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID || '';
+  }
+};
+
 // Get Cognito configuration from environment variables
-const userPoolId = process.env.NEXT_PUBLIC_COGNITO_USER_POOL_ID || '';
-const clientId = process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID || '';
+const userPoolId = getUserPoolId();
+const clientId = getClientId();
 
 if (!userPoolId || !clientId) {
   console.warn('Cognito User Pool ID or Client ID is not defined in environment variables.');

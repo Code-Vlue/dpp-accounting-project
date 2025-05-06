@@ -1,27 +1,17 @@
 version: 1
-applications:
-  - frontend:
-      phases:
-        preBuild:
-          commands:
-            - npm ci
-        build:
-          commands:
-            - npm run build
-            - node scripts/post-build.js
-        postBuild:
-          commands:
-            - echo "Post-build phase completed - required-server-files.json generated"
-      artifacts:
-        baseDirectory: .
-        files:
-          - .next/**/*
-          - node_modules/**/*
-          - public/**/*
-          - package.json
-          - next.config.js
-          - server.js
-      cache:
-        paths:
-          - node_modules/**/*
-          - .next/cache/**/*
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - npm ci
+    build:
+      commands:
+        - npm run build
+  artifacts:
+    baseDirectory: .next
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - node_modules/**/*
+      - .next/cache/**/*

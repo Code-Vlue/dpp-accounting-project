@@ -1,6 +1,11 @@
 // src/app/auth/login/page.tsx
 import { Metadata } from 'next';
-import LoginForm from '@/components/auth/login-form';
+import dynamic from 'next/dynamic';
+
+// Import the client component with no SSR
+const LoginClient = dynamic(() => import('./page.client'), {
+  ssr: false,
+});
 
 export const metadata: Metadata = {
   title: 'Login | DPP Accounting Platform',
@@ -8,11 +13,6 @@ export const metadata: Metadata = {
 };
 
 export default function LoginPage() {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md space-y-8">
-        <LoginForm />
-      </div>
-    </div>
-  );
+  // Return the client component which will only render on the client side
+  return <LoginClient />;
 }

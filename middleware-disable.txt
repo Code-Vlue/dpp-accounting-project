@@ -1,0 +1,13 @@
+# IMPORTANT: Middleware is temporarily disabled to fix redirect loop issue
+# This file should be renamed to src/middleware.ts to disable the middleware completely
+
+// Disabled middleware to fix redirect loops
+export function middleware() {
+  // No middleware applied - returning undefined allows all requests through
+  return undefined;
+}
+
+// Empty config
+export const config = {
+  matcher: [],
+};

@@ -16,6 +16,11 @@ const nextConfig = {
   },
   // Output mode for deployment
   output: 'standalone',
+  // Ensure we generate all necessary files for SSR
+  generateBuildId: async () => {
+    // You can customize the build ID here if needed
+    return 'amplify-ssr-build';
+  },
 };
 
 module.exports = nextConfig;

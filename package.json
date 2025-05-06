@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "postbuild": "node ./scripts/post-build.js",
+    "amplify-fix": "node ./scripts/amplify-ssr-fix.js",
     "start": "next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit",

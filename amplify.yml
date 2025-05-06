@@ -8,6 +8,10 @@ applications:
         build:
           commands:
             - npm run build
+            - node scripts/post-build.js
+        postBuild:
+          commands:
+            - echo "Post-build phase completed - required-server-files.json generated"
       artifacts:
         baseDirectory: .
         files:
@@ -16,6 +20,7 @@ applications:
           - public/**/*
           - package.json
           - next.config.js
+          - server.js
       cache:
         paths:
           - node_modules/**/*

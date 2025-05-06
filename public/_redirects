@@ -1,0 +1,10 @@
+# Redirect old auth routes to new ones
+/signin             /auth/signin
+/login              /auth/login
+/signup             /auth/signup
+/register           /auth/signup
+/forgot-password    /auth/forgot-password
+/reset-password     /auth/reset-password
+
+# Handle SPA routing for client-side navigation
+/*    /index.html   200

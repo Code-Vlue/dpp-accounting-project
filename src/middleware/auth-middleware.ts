@@ -11,6 +11,15 @@ const publicPaths = [
   '/auth/signout',
   '/auth/error',
   '/auth/forgot-password',
+  '/auth/login',
+  '/auth/reset-password',
+  '/auth/signup',
+  '/auth/verify',
+  '/auth/mfa',
+  '/auth/profile',
+  '/auth',
+  '/amplify-test.html',
+  '/api/auth',
 ];
 
 // Define role-based path restrictions
@@ -35,8 +44,15 @@ const roleBasedPaths: Record<string, UserRole[]> = {
  * Check if a path is public or requires authentication
  */
 function isPublicPath(path: string): boolean {
+  // Check exact path matches
   if (publicPaths.includes(path)) return true;
-  if (path.startsWith('/_next') || path.startsWith('/favicon.ico') || path.startsWith('/api/auth/')) return true;
+  
+  // Check path prefixes
+  if (path.startsWith('/_next') || 
+      path.startsWith('/favicon.ico') || 
+      path.startsWith('/api/auth/') ||
+      path.startsWith('/auth/')) return true;
+      
   return false;
 }
 

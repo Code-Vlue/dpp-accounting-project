@@ -100,6 +100,13 @@ try {
       console.log('✅ Removed postbuild script that might interfere with Amplify');
     }
     
+    // Add environment injection script for static build
+    if (packageJson.scripts) {
+      // Add prebuild and postbuild scripts for environment variable handling
+      packageJson.scripts.prebuild = 'node ./scripts/prep-env.js || echo "Skipping environment prep"';
+      console.log('✅ Added prebuild script for environment variable handling');
+    }
+    
     fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
     console.log('✅ Updated package.json');
   } else {

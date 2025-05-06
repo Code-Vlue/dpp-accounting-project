@@ -11,8 +11,11 @@ export function middleware(request: NextRequest) {
 // Configure paths that require middleware
 export const config = {
   matcher: [
-    // Apply to all paths except static files, api routes that handle their own auth,
-    // and specific public routes
-    '/((?!_next/static|_next/image|favicon.ico|api/auth).*)',
+    // Apply to all paths EXCEPT:
+    // 1. Static files and assets
+    // 2. API routes
+    // 3. Authentication routes
+    // 4. Root path
+    '/((?!_next/static|_next/image|favicon.ico|api|auth|amplify-test.html|_redirects).*)',
   ],
 };

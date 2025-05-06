@@ -8,8 +8,10 @@ import { useAuthStore } from '@/store/auth-store';
 
 const LoginForm: React.FC = () => {
   const router = useRouter();
+  // Handle search params safely for static export
   const searchParams = useSearchParams();
-  const redirectUrl = searchParams.get('redirect') || '/dashboard';
+  // Default to dashboard if no redirect URL is provided
+  const redirectUrl = searchParams ? searchParams.get('redirect') || '/dashboard' : '/dashboard';
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

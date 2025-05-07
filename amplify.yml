@@ -24,6 +24,14 @@ frontend:
         # Generate required server files for SSR
         - node ./scripts/post-build.js
         
+        # Run additional fix script to ensure required-server-files.json is in the root
+        - node ./scripts/fix-required-server-files.js
+        
+        # Verify required-server-files.json exists in both locations
+        - ls -la .next/required-server-files.json
+        - ls -la required-server-files.json
+        - cat required-server-files.json
+        
         # List built files
         - ls -la .next/
         

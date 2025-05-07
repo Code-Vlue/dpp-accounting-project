@@ -60,7 +60,16 @@ function generateRequiredServerFiles() {
       JSON.stringify(requiredServerFiles, null, 2)
     );
 
+    // Also write the required-server-files.json file to the project root directory
+    // This is necessary because Amplify sometimes looks for it there
+    const rootRequiredServerFilesPath = path.resolve(process.cwd(), 'required-server-files.json');
+    fs.writeFileSync(
+      rootRequiredServerFilesPath,
+      JSON.stringify(requiredServerFiles, null, 2)
+    );
+
     console.log(`Successfully created ${requiredServerFilesPath}`);
+    console.log(`Also copied to ${rootRequiredServerFilesPath}`);
     
     // Also create an empty server.js file if it doesn't exist
     const serverJsPath = path.resolve(process.cwd(), 'server.js');

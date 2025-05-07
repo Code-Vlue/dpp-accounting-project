@@ -1,0 +1,24 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply text-dark-blue bg-white;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading font-bold;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary-green text-white px-4 py-2 rounded-md hover:bg-hover-green transition-colors;
+  }
+  .btn-secondary {
+    @apply bg-secondary-blue text-white px-4 py-2 rounded-md hover:bg-accent-blue transition-colors;
+  }
+  .card {
+    @apply bg-white rounded-lg shadow-md p-4;
+  }
+}

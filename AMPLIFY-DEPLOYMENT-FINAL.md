@@ -1,6 +1,6 @@
 # AWS Amplify Deployment Guide - Final Solution
 
-This is the definitive guide for deploying the DPP Accounting Platform to AWS Amplify, resolving the authentication issues and deployment problems.
+This is the definitive guide for deploying the DPP Accounting Platform to AWS Amplify, resolving the SSR deployment issues and authentication problems.
 
 ## Deployment Instructions
 
@@ -13,7 +13,7 @@ This is the definitive guide for deploying the DPP Accounting Platform to AWS Am
    - Select the repository and branch (usually `master` or `main`)
 
 2. **Configure build settings**:
-   - Framework: Choose "Next.js - SSG" (NOT SSR)
+   - Framework: Choose "Next.js - SSR" (important!)
    - Build settings: Use the existing amplify.yml from the repo
    - Environment variables: Set the following values:
      ```
@@ -107,17 +107,33 @@ After deployment, verify these critical functions:
 
 | Issue | Solution |
 |-------|----------|
-| 404 errors on direct page access | Check `_routes.json` and redirection script |
-| Login redirects in a loop | Ensure middleware is disabled and login page uses client component |
+| "Can't find required-server-files.json" | Ensure post-build.js and fix-required-server-files.js are running during build |
+| "Server trace files are not found" | Verify fix-trace-files.js is running and trace files are in amplify.yml artifacts |
+| 404 errors on direct page access | Check routing configuration in server.js and middleware |
+| Login redirects in a loop | Ensure middleware is properly configured for auth paths |
 | Authentication fails | Verify Cognito environment variables in Amplify Console |
-| Environment variables not loading | Check `env-config.js` and inspect browser console for errors |
-| Build fails | Ensure `amplify.yml` has correct output directory (`out`) |
+| Environment variables not loading | Check for proper injection in server.js and .env.local |
+| Build fails | Check amplify.yml configuration and build logs for specific errors |
+
+## Key Files for SSR Deployment
+
+| File | Purpose |
+|------|---------|
+| `amplify.yml` | Main configuration file for AWS Amplify deployment |
+| `server.js` | Custom server implementation with self-healing features |
+| `amplify-start-command.sh` | Startup script with verification and fallbacks |
+| `scripts/post-build.js` | Generates required-server-files.json |
+| `scripts/fix-trace-files.js` | Ensures trace files exist for SSR |
+| `customHttp.yml` | Custom header configuration for Amplify |
+| `next.config.js` | Next.js configuration with output: 'standalone' |
 
 ## Advanced Configuration
 
 For future enhancements:
-- Re-enable middleware with proper path exclusions
+- Add CloudWatch monitoring for server performance
 - Implement API routes using Lambda functions
 - Set up custom domains with SSL
+- Configure CDN caching strategies for improved performance
+- Add server-side error tracking
 
-Remember to always test your authentication flow after any changes to environment variables or authentication code.
+Remember to always test your deployment thoroughly after any configuration changes, especially related to authentication and server-side rendering.

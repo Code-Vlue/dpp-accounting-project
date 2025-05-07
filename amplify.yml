@@ -1,54 +1,55 @@
 version: 1
-applications:
-  - frontend:
-      phases:
-        preBuild:
-          commands:
-            - npm ci
-            # Echo key debug info
-            - echo "Environment: $NODE_ENV"
-            - node -v
-            - npm -v
-        build:
-          commands:
-            # Create standard .env.local file for build process
-            - echo "NEXT_PUBLIC_COGNITO_USER_POOL_ID=$NEXT_PUBLIC_COGNITO_USER_POOL_ID" >> .env.local
-            - echo "NEXT_PUBLIC_COGNITO_CLIENT_ID=$NEXT_PUBLIC_COGNITO_CLIENT_ID" >> .env.local
-            - echo "NEXT_PUBLIC_AWS_REGION=$AWS_REGION" >> .env.local
-            # Add additional environment variables
-            - echo "NEXT_PUBLIC_API_URL=${API_URL:-https://api.example.com}" >> .env.local
-            - echo "NEXT_PUBLIC_SITE_URL=${SITE_URL:-https://dpp-accounting.example.com}" >> .env.local
-            
-            # Build the application
-            - npm run build
-            
-            # Post-build: setup client-side environment variables
-            - cp -r public/* out/
-            - echo "Injecting environment variables into client-side scripts..."
-            - sed -i "s/__COGNITO_USER_POOL_ID__/$NEXT_PUBLIC_COGNITO_USER_POOL_ID/g" out/env-config.js
-            - sed -i "s/__COGNITO_CLIENT_ID__/$NEXT_PUBLIC_COGNITO_CLIENT_ID/g" out/env-config.js
-            - sed -i "s/__REGION__/$AWS_REGION/g" out/env-config.js
-            - sed -i "s/__API_URL__/${API_URL:-https://api.example.com}/g" out/env-config.js
-            - sed -i "s/__SITE_URL__/${SITE_URL:-https://dpp-accounting.example.com}/g" out/env-config.js
-            
-            # Ensure routing configuration is in place
-            - echo "Verifying routing configuration..."
-            - test -f out/_routes.json || cp public/_routes.json out/
-            
-            # Add deploy timestamp for debugging
-            - echo "DEPLOY_TIMESTAMP=$(date)" >> out/build-info.txt
-            - echo "AMPLIFY_APP_ID=${AWS_APP_ID:-unknown}" >> out/build-info.txt
-            
-        postBuild:
-          commands:
-            - echo "Build completed on $(date)"
-            - echo "Output files in 'out' directory:"
-            - ls -la out/
-      artifacts:
-        baseDirectory: out
-        files:
-          - '**/*'
-      cache:
-        paths:
-          - node_modules/**/*
-          - .next/cache/**/*
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - npm ci
+        # Echo key debug info
+        - echo "Environment $NODE_ENV"
+        - node -v
+        - npm -v
+    build:
+      commands:
+        # Create standard .env.local file for build process
+        - echo "NEXT_PUBLIC_COGNITO_USER_POOL_ID=$NEXT_PUBLIC_COGNITO_USER_POOL_ID" >> .env.local
+        - echo "NEXT_PUBLIC_COGNITO_CLIENT_ID=$NEXT_PUBLIC_COGNITO_CLIENT_ID" >> .env.local
+        - echo "NEXT_PUBLIC_COGNITO_REGION=$AWS_REGION" >> .env.local
+        - echo "NEXT_PUBLIC_API_URL=https://master.d2ibw1me0nb2ns.amplifyapp.com/api" >> .env.local
+        - echo "NEXT_PUBLIC_SITE_URL=https://master.d2ibw1me0nb2ns.amplifyapp.com" >> .env.local
+        
+        # Build the application
+        - echo "Building server-side rendered application..."
+        - npm run build
+        
+        # Generate required server files for SSR
+        - node ./scripts/post-build.js
+        
+        # List built files
+        - ls -la .next/
+        
+        # Make the start script executable
+        - chmod +x amplify-start-command.sh
+    postBuild:
+      commands:
+        - echo "Build completed on $(date)"
+  artifacts:
+    baseDirectory: .
+    files:
+      - package.json
+      - package-lock.json
+      - next.config.js
+      - server.js
+      - amplify-start-command.sh
+      - .next/**/*
+      - node_modules/**/*
+      - public/**/*
+      - required-server-files.json
+  customHeaders:
+    - pattern: '**/*'
+      headers:
+        - key: Cache-Control
+          value: 'public, max-age=0, must-revalidate'
+  cache:
+    paths:
+      - node_modules/**/*
+      - .next/cache/**/*

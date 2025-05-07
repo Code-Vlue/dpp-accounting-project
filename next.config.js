@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export',
+  // Using 'standalone' output for SSR deployment on AWS Amplify
+  output: 'standalone',
   images: {
     unoptimized: true,
   },
@@ -13,8 +14,10 @@ const nextConfig = {
   experimental: {
     missingSuspenseWithCSRBailout: false,
   },
-  // Prevent trailing slashes to improve routing consistency
-  trailingSlash: false,
+  // Generate a consistent build ID for Amplify
+  generateBuildId: async () => {
+    return 'amplify-ssr-build';
+  },
 }
 
 module.exports = nextConfig

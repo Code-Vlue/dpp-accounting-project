@@ -58,3 +58,17 @@ clau*.log
 # Large binary files
 **/*.node
 **/*.pack
+
+# Build and deployment artifacts
+**/amplify-deploy*/
+**/amplify-deployment*/
+**/*-deploy*/
+**/build-output*/
+**/deploy*/
+**/*.zip
+**/*.tar.gz
+**/trace/
+**/required-server-files.json
+**/amplify-job.json
+**/installed_deps.txt
+**/package_deps.txt

@@ -7,7 +7,17 @@ applications:
             - npm ci
         build:
           commands:
+            - echo "NEXT_PUBLIC_COGNITO_USER_POOL_ID=$NEXT_PUBLIC_COGNITO_USER_POOL_ID" >> .env.local
+            - echo "NEXT_PUBLIC_COGNITO_CLIENT_ID=$NEXT_PUBLIC_COGNITO_CLIENT_ID" >> .env.local
+            - echo "NEXT_PUBLIC_AWS_REGION=$AWS_REGION" >> .env.local
             - npm run build
+            - cp -r public/* out/
+            - sed -i "s/__COGNITO_USER_POOL_ID__/$NEXT_PUBLIC_COGNITO_USER_POOL_ID/g" out/env-config.js
+            - sed -i "s/__COGNITO_CLIENT_ID__/$NEXT_PUBLIC_COGNITO_CLIENT_ID/g" out/env-config.js
+            - sed -i "s/__REGION__/$AWS_REGION/g" out/env-config.js
+        postBuild:
+          commands:
+            - echo "Build completed on `date`"
       artifacts:
         baseDirectory: out
         files:

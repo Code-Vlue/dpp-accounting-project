@@ -1,38 +1,108 @@
-# Minimal AWS Amplify Deployment
+# Minimal AWS Amplify Deployment Guide
 
-## Minimal Working Configuration
+## Critical Configuration for Successful Deployment
 
-After multiple attempts, we have reduced the deployment to the absolute minimal configuration that should work with AWS Amplify:
+After multiple troubleshooting iterations, we've identified the minimal viable configuration for successful deployment to AWS Amplify:
 
-1. **Simplified next.config.js**
-   - Only includes `output: 'export'`
-   - Sets `images.unoptimized: true`
-   - Enables `ignoreBuildErrors` for TypeScript
+### 1. Next.js Configuration (`next.config.js`)
 
-2. **Minimal amplify.yml**
-   - Simple build process: `npm ci` and `npm run build`
-   - Artifacts from the `out` directory
-   - Minimal caching configuration
+```javascript
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  output: 'export',
+  images: {
+    unoptimized: true,
+  },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  experimental: {
+    missingSuspenseWithCSRBailout: false,
+  },
+  trailingSlash: false,
+}
 
-3. **Setup in AWS Amplify Console**
-   - Framework: "Next.js - SSG"
-   - Branch: master
-   - Environment variables:
-     - NEXT_PUBLIC_COGNITO_USER_POOL_ID
-     - NEXT_PUBLIC_COGNITO_CLIENT_ID
+module.exports = nextConfig
+```
 
-## Important Notes
+### 2. AWS Amplify Configuration (`amplify.yml`)
 
-1. All configuration options that were causing problems have been removed
-2. This setup uses Next.js's static export capability
-3. We've simplified everything to the most basic configuration possible
+```yaml
+version: 1
+applications:
+  - frontend:
+      phases:
+        preBuild:
+          commands:
+            - npm ci
+        build:
+          commands:
+            - echo "NEXT_PUBLIC_COGNITO_USER_POOL_ID=$NEXT_PUBLIC_COGNITO_USER_POOL_ID" >> .env.local
+            - echo "NEXT_PUBLIC_COGNITO_CLIENT_ID=$NEXT_PUBLIC_COGNITO_CLIENT_ID" >> .env.local
+            - echo "NEXT_PUBLIC_AWS_REGION=$AWS_REGION" >> .env.local
+            - npm run build
+            - cp -r public/* out/
+            - sed -i "s/__COGNITO_USER_POOL_ID__/$NEXT_PUBLIC_COGNITO_USER_POOL_ID/g" out/env-config.js
+            - sed -i "s/__COGNITO_CLIENT_ID__/$NEXT_PUBLIC_COGNITO_CLIENT_ID/g" out/env-config.js
+            - sed -i "s/__REGION__/$AWS_REGION/g" out/env-config.js
+        postBuild:
+          commands:
+            - echo "Build completed on `date`"
+      artifacts:
+        baseDirectory: out
+        files:
+          - '**/*'
+      cache:
+        paths:
+          - node_modules/**/*
+```
 
-## After Deployment Success
+### 3. Required Amplify Console Settings
 
-After this minimal deployment succeeds, we can iteratively add back features while ensuring the build continues to work:
+- **Framework**: Select "Next.js - SSG" (NOT "Next.js - SSR")
+- **Environment Variables**:
+  - NEXT_PUBLIC_COGNITO_USER_POOL_ID
+  - NEXT_PUBLIC_COGNITO_CLIENT_ID
+  - AWS_REGION
 
-1. Add proper routing for direct page access
-2. Re-enable environment variable injection
-3. Add custom routing configuration for Amplify
+### 4. Critical Client-Side Files
 
-The current focus is solely on getting a successful build and deployment.
+Ensure these files exist in your public directory:
+- `public/env-config.js` - For runtime environment variables
+- `public/404.html` - For SPA routing fallback
+- `public/_routes.json` - For Amplify routing configuration
+- `public/index.html` - Custom entry point with routing script
+
+### 5. Deployment Steps
+
+1. Log in to AWS Amplify Console
+2. Create a new app or select existing one
+3. Connect to your repository
+4. Select branch to deploy
+5. Configure build settings:
+   - Verify framework is "Next.js - SSG"
+   - Add required environment variables
+   - Use existing amplify.yml from repository
+6. Click "Save and deploy"
+
+### 6. Verification
+
+After deployment completes:
+1. Check build logs for any errors
+2. Navigate directly to the deployed URL
+3. Try accessing `/auth/login` directly in browser
+4. Test authentication flow
+5. Check browser console for environment variable loading
+
+### Troubleshooting
+
+If deployment fails:
+1. Verify the framework selection is "Next.js - SSG" (not SSR)
+2. Check that all environment variables are correctly set
+3. Ensure the output directory in amplify.yml matches your next.config.js setting
+4. Verify all required public files are present
+
+This minimal configuration ensures the application deploys successfully while maintaining authentication functionality.

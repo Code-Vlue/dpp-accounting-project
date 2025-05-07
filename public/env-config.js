@@ -7,3 +7,28 @@ window.ENV = {
   API_URL: '__API_URL__',
   SITE_URL: '__SITE_URL__'
 };
+
+// Make environment variables accessible through simpler variables
+window.COGNITO_USER_POOL_ID = window.ENV.COGNITO_USER_POOL_ID;
+window.COGNITO_CLIENT_ID = window.ENV.COGNITO_CLIENT_ID;
+window.REGION = window.ENV.REGION;
+
+// Load environment variables from meta tags if available
+(function loadEnvFromMetaTags() {
+  try {
+    // Try to get environment variables from meta tags (Amplify injects these)
+    const envVars = document.querySelectorAll('meta[name^="env-"]');
+    envVars.forEach(meta => {
+      const name = meta.getAttribute('name')?.replace('env-', '') || '';
+      const content = meta.getAttribute('content') || '';
+      if (name && content) {
+        window.ENV[name.toUpperCase()] = content;
+        window[name.toUpperCase()] = content;
+      }
+    });
+    
+    console.log('Environment variables loaded successfully');
+  } catch (error) {
+    console.warn('Failed to load environment variables from meta tags', error);
+  }
+})();

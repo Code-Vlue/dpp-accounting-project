@@ -15,13 +15,31 @@ const getUserPoolId = () => {
   if (typeof window !== 'undefined') {
     // Client-side: Try multiple sources in order of priority
     // 1. Amplify global variables injected at runtime
-    // 2. Environment variables
-    // 3. Hardcoded window variables (for static deployments)
-    // 4. Fallback value
-    return (window as any).COGNITO_USER_POOL_ID || 
-           process.env.NEXT_PUBLIC_COGNITO_USER_POOL_ID || 
-           (window as any).ENV_COGNITO_USER_POOL_ID ||
-           FALLBACK_USER_POOL_ID;
+    // 2. Window ENV object from env-config.js
+    // 3. Direct window variables 
+    // 4. Next.js environment variables
+    // 5. Fallback value
+    const fromWindow = (window as any).COGNITO_USER_POOL_ID;
+    const fromEnv = (window as any).ENV?.COGNITO_USER_POOL_ID;
+    const fromNextEnv = process.env.NEXT_PUBLIC_COGNITO_USER_POOL_ID;
+    
+    if (fromWindow && fromWindow !== '__COGNITO_USER_POOL_ID__') {
+      console.log('Using Cognito User Pool ID from window global');
+      return fromWindow;
+    }
+    
+    if (fromEnv && fromEnv !== '__COGNITO_USER_POOL_ID__') {
+      console.log('Using Cognito User Pool ID from ENV object');
+      return fromEnv;
+    }
+    
+    if (fromNextEnv) {
+      console.log('Using Cognito User Pool ID from Next.js env variables');
+      return fromNextEnv;
+    }
+    
+    console.warn('Using fallback Cognito User Pool ID');
+    return FALLBACK_USER_POOL_ID;
   } else {
     // Server-side: Use env vars with fallback
     return process.env.NEXT_PUBLIC_COGNITO_USER_POOL_ID || FALLBACK_USER_POOL_ID;
@@ -31,10 +49,27 @@ const getUserPoolId = () => {
 const getClientId = () => {
   if (typeof window !== 'undefined') {
     // Client-side: Try multiple sources in order of priority
-    return (window as any).COGNITO_CLIENT_ID || 
-           process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID || 
-           (window as any).ENV_COGNITO_CLIENT_ID ||
-           FALLBACK_CLIENT_ID;
+    const fromWindow = (window as any).COGNITO_CLIENT_ID;
+    const fromEnv = (window as any).ENV?.COGNITO_CLIENT_ID;
+    const fromNextEnv = process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID;
+    
+    if (fromWindow && fromWindow !== '__COGNITO_CLIENT_ID__') {
+      console.log('Using Cognito Client ID from window global');
+      return fromWindow;
+    }
+    
+    if (fromEnv && fromEnv !== '__COGNITO_CLIENT_ID__') {
+      console.log('Using Cognito Client ID from ENV object');
+      return fromEnv;
+    }
+    
+    if (fromNextEnv) {
+      console.log('Using Cognito Client ID from Next.js env variables');
+      return fromNextEnv;
+    }
+    
+    console.warn('Using fallback Cognito Client ID');
+    return FALLBACK_CLIENT_ID;
   } else {
     // Server-side: Use env vars with fallback
     return process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID || FALLBACK_CLIENT_ID;
@@ -45,31 +80,52 @@ const getClientId = () => {
 const userPoolId = getUserPoolId();
 const clientId = getClientId();
 
-// For static builds, try to load environment variables from window
-// This is useful for Amplify deployments where env vars are injected at runtime
-if (typeof window !== 'undefined' && !(window as any).ENV_LOADED) {
-  try {
-    // Try to get environment variables from meta tags (Amplify injects these)
-    const envVars = document.querySelectorAll('meta[name^="env-"]');
-    envVars.forEach(meta => {
-      const name = meta.getAttribute('name')?.replace('env-', '') || '';
-      const content = meta.getAttribute('content') || '';
-      if (name && content) {
-        (window as any)[`ENV_${name.toUpperCase()}`] = content;
-      }
+// Debug environment variable loading
+if (typeof window !== 'undefined') {
+  console.log('Auth configuration:', { 
+    userPoolId: userPoolId === FALLBACK_USER_POOL_ID ? 'FALLBACK' : 'CONFIGURED',
+    clientId: clientId === FALLBACK_CLIENT_ID ? 'FALLBACK' : 'CONFIGURED',
+  });
+  
+  // Log all available variables (for debugging only)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('Available environment sources:', {
+      nextPublicVars: Object.keys(process.env).filter(k => k.startsWith('NEXT_PUBLIC_')),
+      windowEnv: window.ENV ? 'Available' : 'Not Available',
+      windowVars: ['COGNITO_USER_POOL_ID', 'COGNITO_CLIENT_ID', 'REGION'].filter(k => (window as any)[k]),
     });
+  }
+}
+
+// Try to load environment variables from window.ENV
+// This is helpful for Amplify deployments where env-config.js provides variables
+if (typeof window !== 'undefined' && (window as any).ENV && !(window as any).ENV_LOADED) {
+  try {
+    // Check if env-config.js has already been loaded
+    if ((window as any).ENV.COGNITO_USER_POOL_ID && (window as any).ENV.COGNITO_USER_POOL_ID !== '__COGNITO_USER_POOL_ID__') {
+      console.log('Environment variables already loaded from env-config.js');
+    } else {
+      // Try to get environment variables from meta tags (Amplify injects these)
+      const envVars = document.querySelectorAll('meta[name^="env-"]');
+      envVars.forEach(meta => {
+        const name = meta.getAttribute('name')?.replace('env-', '') || '';
+        const content = meta.getAttribute('content') || '';
+        if (name && content) {
+          (window as any).ENV[name.toUpperCase()] = content;
+          (window as any)[name.toUpperCase()] = content;
+        }
+      });
+    }
     
     // Mark as loaded
     (window as any).ENV_LOADED = true;
-    
-    console.log('Environment variables loaded from meta tags');
   } catch (error) {
     console.warn('Failed to load environment variables from meta tags', error);
   }
 }
 
-if (!userPoolId || !clientId) {
-  console.warn('Cognito User Pool ID or Client ID is not defined in environment variables.');
+if (!userPoolId || !clientId || userPoolId === FALLBACK_USER_POOL_ID || clientId === FALLBACK_CLIENT_ID) {
+  console.warn('Using fallback Cognito configuration. Authentication may not work correctly in production.');
 }
 
 // Initialize Cognito User Pool
@@ -79,11 +135,18 @@ export const userPool = new CognitoUserPool({
 });
 
 export const getRegion = (): string => {
-  // Extract region from User Pool ID (format: region_id)
-  if (userPoolId) {
-    return userPoolId.split('_')[0];
+  // Try multiple sources for region
+  if (typeof window !== 'undefined') {
+    // Client-side
+    return (window as any).REGION || 
+          (window as any).ENV?.REGION || 
+          process.env.AWS_REGION ||
+          (userPoolId ? userPoolId.split('_')[0] : 'us-east-1');
   }
-  return process.env.AWS_REGION || 'us-east-1';
+  
+  // Server-side
+  return process.env.AWS_REGION || 
+        (userPoolId ? userPoolId.split('_')[0] : 'us-east-1');
 };
 
 // Other Cognito configuration options

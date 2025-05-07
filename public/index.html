@@ -6,21 +6,30 @@
     <title>DPP Accounting Platform</title>
     <meta name="description" content="Comprehensive financial management for the Denver Preschool Program">
     
-    <!-- Environment Variables -->
+    <!-- Load environment variables -->
+    <script src="/env-config.js"></script>
+    
+    <!-- Script to handle SPA routing -->
     <script>
-      window.COGNITO_USER_POOL_ID = '__COGNITO_USER_POOL_ID__';
-      window.COGNITO_CLIENT_ID = '__COGNITO_CLIENT_ID__';
-      window.REGION = '__REGION__';
-      window.API_URL = '__API_URL__';
-      window.SITE_URL = '__SITE_URL__';
+      // Handle path redirects from 404 page
+      (function() {
+        var path = window.location.search.match(/(\?|&)path=([^&]*)/);
+        if (path) {
+          var redirectPath = '/' + path[2];
+          history.replaceState(null, null, redirectPath);
+        }
+      })();
     </script>
   </head>
   <body>
     <div id="root">
       <div style="text-align: center; padding: 40px; font-family: Arial, sans-serif;">
         <h1>DPP Accounting Platform</h1>
-        <p>If you see this message, please redirect to <a href="/">the home page</a>.</p>
+        <p>Loading application...</p>
       </div>
     </div>
+    
+    <!-- Load SPA helper script -->
+    <script src="/next-spa.js"></script>
   </body>
 </html>

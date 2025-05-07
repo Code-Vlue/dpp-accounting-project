@@ -264,6 +264,124 @@ else
   AWS_CONFIG_CHECK="⚠️ AWS deployment configuration file missing"
 fi
 
+# Verify AWS Amplify specific configuration
+log_header "Verifying AWS Amplify SSR Configuration"
+
+# Check amplify.yml
+if [ -f "amplify.yml" ]; then
+  log_success "amplify.yml file exists"
+  
+  # Check for trace files in artifacts
+  if grep -q "trace/\*\*/\*" amplify.yml; then
+    log_success "amplify.yml includes trace files in artifacts section"
+    AMPLIFY_TRACE_CHECK="✅ amplify.yml includes trace files in artifacts"
+  else
+    log_error "amplify.yml does not include trace files in artifacts section"
+    AMPLIFY_TRACE_CHECK="❌ amplify.yml does not include trace files in artifacts"
+  fi
+  
+  # Check for required-server-files.json in artifacts
+  if grep -q "required-server-files.json" amplify.yml; then
+    log_success "amplify.yml includes required-server-files.json in artifacts section"
+    AMPLIFY_RSF_CHECK="✅ amplify.yml includes required-server-files.json in artifacts"
+  else
+    log_error "amplify.yml does not include required-server-files.json in artifacts section"
+    AMPLIFY_RSF_CHECK="❌ amplify.yml does not include required-server-files.json in artifacts"
+  fi
+  
+  # Check for server.js in artifacts
+  if grep -q "server.js" amplify.yml; then
+    log_success "amplify.yml includes server.js in artifacts section"
+    AMPLIFY_SERVER_CHECK="✅ amplify.yml includes server.js in artifacts"
+  else
+    log_error "amplify.yml does not include server.js in artifacts section"
+    AMPLIFY_SERVER_CHECK="❌ amplify.yml does not include server.js in artifacts"
+  fi
+  
+  AMPLIFY_YML_CHECK="✅ amplify.yml exists\n$AMPLIFY_TRACE_CHECK\n$AMPLIFY_RSF_CHECK\n$AMPLIFY_SERVER_CHECK"
+else
+  log_error "amplify.yml file is missing"
+  AMPLIFY_YML_CHECK="❌ amplify.yml file is missing"
+fi
+
+# Check required scripts for AWS Amplify SSR
+AMPLIFY_SCRIPTS=(
+  "scripts/post-build.js"
+  "scripts/fix-required-server-files.js"
+  "scripts/fix-trace-files.js"
+)
+MISSING_AMPLIFY_SCRIPTS=()
+
+for script in "${AMPLIFY_SCRIPTS[@]}"; do
+  if [ -f "$script" ]; then
+    log_success "AWS Amplify script $script exists"
+  else
+    log_error "Required AWS Amplify script $script not found"
+    MISSING_AMPLIFY_SCRIPTS+=("$script")
+  fi
+done
+
+if [ ${#MISSING_AMPLIFY_SCRIPTS[@]} -eq 0 ]; then
+  AMPLIFY_SCRIPTS_CHECK="✅ All required AWS Amplify scripts exist"
+else
+  AMPLIFY_SCRIPTS_CHECK="❌ Missing required AWS Amplify scripts: ${MISSING_AMPLIFY_SCRIPTS[*]}"
+fi
+
+# Check server.js for self-healing capabilities
+if [ -f "server.js" ]; then
+  if grep -q "self-healing\|Creating missing\|ensure" server.js; then
+    log_success "server.js includes self-healing capabilities"
+    SERVER_JS_CHECK="✅ server.js includes self-healing capabilities"
+  else
+    log_error "server.js does not include self-healing capabilities"
+    SERVER_JS_CHECK="❌ server.js lacks self-healing capabilities"
+  fi
+else
+  log_error "server.js file is missing"
+  SERVER_JS_CHECK="❌ server.js file is missing"
+fi
+
+# Check amplify-start-command.sh
+if [ -f "amplify-start-command.sh" ]; then
+  if [ -x "amplify-start-command.sh" ]; then
+    log_success "amplify-start-command.sh is executable"
+    
+    if grep -q "fallback\|verification" amplify-start-command.sh; then
+      log_success "amplify-start-command.sh includes verification and fallback mechanisms"
+      START_COMMAND_CHECK="✅ amplify-start-command.sh includes verification and fallback mechanisms"
+    else
+      log_warning "amplify-start-command.sh may lack verification or fallback mechanisms"
+      START_COMMAND_CHECK="⚠️ amplify-start-command.sh lacks verification or fallback mechanisms"
+    fi
+  else
+    log_error "amplify-start-command.sh is not executable"
+    chmod +x amplify-start-command.sh
+    log_success "Fixed permissions for amplify-start-command.sh"
+    START_COMMAND_CHECK="✅ amplify-start-command.sh (permissions fixed)"
+  fi
+else
+  log_error "amplify-start-command.sh file is missing"
+  START_COMMAND_CHECK="❌ amplify-start-command.sh file is missing"
+fi
+
+# Check customHttp.yml
+if [ -f "customHttp.yml" ]; then
+  log_success "customHttp.yml file exists"
+  CUSTOM_HTTP_CHECK="✅ customHttp.yml file exists"
+else
+  log_error "customHttp.yml file is missing"
+  CUSTOM_HTTP_CHECK="❌ customHttp.yml file is missing"
+fi
+
+# Check next.config.js for output: 'standalone'
+if grep -q "output: 'standalone'" next.config.js; then
+  log_success "next.config.js has output: 'standalone' set correctly for AWS Amplify SSR"
+  NEXTJS_OUTPUT_CHECK="✅ next.config.js has output: 'standalone' set correctly for AWS Amplify SSR"
+else
+  log_error "next.config.js does not have output: 'standalone' set for AWS Amplify SSR"
+  NEXTJS_OUTPUT_CHECK="❌ next.config.js does not have output: 'standalone' set for AWS Amplify SSR"
+fi
+
 # Clean installation verification
 log_header "Verifying Clean Installation"
 
@@ -358,12 +476,12 @@ else
 fi
 
 # Calculate overall status
-TOTAL_CHECKS=12
+TOTAL_CHECKS=18
 PASSED_CHECKS=0
 FAILED_CHECKS=0
 WARNING_CHECKS=0
 
-# Count successes
+# Count successes for basic checks
 [[ "$NODE_VERSION_CHECK" == ✅* ]] && ((PASSED_CHECKS++))
 [[ "$NPM_VERSION_CHECK" == ✅* ]] && ((PASSED_CHECKS++))
 [[ "$TURBOPACK_CHECK" == ✅* ]] && ((PASSED_CHECKS++))
@@ -377,7 +495,15 @@ WARNING_CHECKS=0
 [[ "$TS_CHECK" == ✅* ]] && ((PASSED_CHECKS++))
 [[ "$BUILD_CHECK" == ✅* ]] && ((PASSED_CHECKS++))
 
-# Count warnings
+# Count successes for AWS Amplify SSR checks
+[[ "$AMPLIFY_YML_CHECK" == ✅* ]] && ((PASSED_CHECKS++))
+[[ "$AMPLIFY_SCRIPTS_CHECK" == ✅* ]] && ((PASSED_CHECKS++))
+[[ "$SERVER_JS_CHECK" == ✅* ]] && ((PASSED_CHECKS++))
+[[ "$START_COMMAND_CHECK" == ✅* ]] && ((PASSED_CHECKS++))
+[[ "$CUSTOM_HTTP_CHECK" == ✅* ]] && ((PASSED_CHECKS++))
+[[ "$NEXTJS_OUTPUT_CHECK" == ✅* ]] && ((PASSED_CHECKS++))
+
+# Count warnings for basic checks
 [[ "$NODE_VERSION_CHECK" == ⚠️* ]] && ((WARNING_CHECKS++))
 [[ "$NPM_VERSION_CHECK" == ⚠️* ]] && ((WARNING_CHECKS++))
 [[ "$TURBOPACK_CHECK" == ⚠️* ]] && ((WARNING_CHECKS++))
@@ -391,7 +517,15 @@ WARNING_CHECKS=0
 [[ "$TS_CHECK" == ⚠️* ]] && ((WARNING_CHECKS++))
 [[ "$BUILD_CHECK" == ⚠️* ]] && ((WARNING_CHECKS++))
 
-# Count failures
+# Count warnings for AWS Amplify SSR checks
+[[ "$AMPLIFY_YML_CHECK" == ⚠️* ]] && ((WARNING_CHECKS++))
+[[ "$AMPLIFY_SCRIPTS_CHECK" == ⚠️* ]] && ((WARNING_CHECKS++))
+[[ "$SERVER_JS_CHECK" == ⚠️* ]] && ((WARNING_CHECKS++))
+[[ "$START_COMMAND_CHECK" == ⚠️* ]] && ((WARNING_CHECKS++))
+[[ "$CUSTOM_HTTP_CHECK" == ⚠️* ]] && ((WARNING_CHECKS++))
+[[ "$NEXTJS_OUTPUT_CHECK" == ⚠️* ]] && ((WARNING_CHECKS++))
+
+# Count failures for basic checks
 [[ "$NODE_VERSION_CHECK" == ❌* ]] && ((FAILED_CHECKS++))
 [[ "$NPM_VERSION_CHECK" == ❌* ]] && ((FAILED_CHECKS++))
 [[ "$TURBOPACK_CHECK" == ❌* ]] && ((FAILED_CHECKS++))
@@ -404,6 +538,14 @@ WARNING_CHECKS=0
 [[ "$LINT_CHECK" == ❌* ]] && ((FAILED_CHECKS++))
 [[ "$TS_CHECK" == ❌* ]] && ((FAILED_CHECKS++))
 [[ "$BUILD_CHECK" == ❌* ]] && ((FAILED_CHECKS++))
+
+# Count failures for AWS Amplify SSR checks
+[[ "$AMPLIFY_YML_CHECK" == ❌* ]] && ((FAILED_CHECKS++))
+[[ "$AMPLIFY_SCRIPTS_CHECK" == ❌* ]] && ((FAILED_CHECKS++))
+[[ "$SERVER_JS_CHECK" == ❌* ]] && ((FAILED_CHECKS++))
+[[ "$START_COMMAND_CHECK" == ❌* ]] && ((FAILED_CHECKS++))
+[[ "$CUSTOM_HTTP_CHECK" == ❌* ]] && ((FAILED_CHECKS++))
+[[ "$NEXTJS_OUTPUT_CHECK" == ❌* ]] && ((FAILED_CHECKS++))
 
 # Determine overall status
 OVERALL_SCORE=$((100 * PASSED_CHECKS / TOTAL_CHECKS))
@@ -433,10 +575,11 @@ echo "$SUMMARY" >> "$REPORT_PATH"
 # Add details to the report
 update_report "Package Versions" "$PACKAGE_INFO"
 update_report "Scripts Configuration" "$DEV_SCRIPT_CHECK\n$BUILD_SCRIPT_CHECK\n$START_SCRIPT_CHECK\n$TURBOPACK_CHECK"
-update_report "Next.js Configuration" "$NEXT_CONFIG_CHECK"
+update_report "Next.js Configuration" "$NEXT_CONFIG_CHECK\n$NEXTJS_OUTPUT_CHECK"
 update_report "Key Files and Directories" "$DIRECTORY_CHECK"
 update_report "Documentation" "$DOCS_CHECK"
 update_report "AWS Configuration" "$AWS_CHECK\n$AWS_CONFIG_CHECK"
+update_report "AWS Amplify SSR Configuration" "$AMPLIFY_YML_CHECK\n$AMPLIFY_SCRIPTS_CHECK\n$SERVER_JS_CHECK\n$START_COMMAND_CHECK\n$CUSTOM_HTTP_CHECK"
 update_report "Build Process" "$CLEAN_INSTALL_CHECK\n$LINT_CHECK\n$TS_CHECK\n$BUILD_CHECK"
 
 # Add recommendations section
@@ -444,6 +587,7 @@ RECOMMENDATIONS="### Critical Issues to Fix"
 if [ $FAILED_CHECKS -eq 0 ]; then
   RECOMMENDATIONS="$RECOMMENDATIONS\n- No critical issues found"
 else
+  # Basic configuration issues
   [ "$TURBOPACK_CHECK" == ❌* ] && RECOMMENDATIONS="$RECOMMENDATIONS\n- Remove Turbopack from package.json"
   [ "$NEXT_CONFIG_CHECK" == ❌* ] && RECOMMENDATIONS="$RECOMMENDATIONS\n- Fix Next.js configuration issues"
   [ "$DIRECTORY_CHECK" == ❌* ] && RECOMMENDATIONS="$RECOMMENDATIONS\n- Create missing key directories and files"
@@ -451,9 +595,29 @@ else
   [ "$CLEAN_INSTALL_CHECK" == ❌* ] && RECOMMENDATIONS="$RECOMMENDATIONS\n- Fix dependency issues preventing clean installation"
   [ "$LINT_CHECK" == ❌* ] && RECOMMENDATIONS="$RECOMMENDATIONS\n- Address linting issues"
   [ "$BUILD_CHECK" == ❌* ] && RECOMMENDATIONS="$RECOMMENDATIONS\n- Resolve build failures"
+  
+  # AWS Amplify SSR specific issues
+  [ "$AMPLIFY_YML_CHECK" == ❌* ] && RECOMMENDATIONS="$RECOMMENDATIONS\n- Fix issues in amplify.yml configuration"
+  [ "$AMPLIFY_SCRIPTS_CHECK" == ❌* ] && RECOMMENDATIONS="$RECOMMENDATIONS\n- Create missing AWS Amplify scripts"
+  [ "$SERVER_JS_CHECK" == ❌* ] && RECOMMENDATIONS="$RECOMMENDATIONS\n- Fix issues with server.js"
+  [ "$START_COMMAND_CHECK" == ❌* ] && RECOMMENDATIONS="$RECOMMENDATIONS\n- Fix issues with amplify-start-command.sh"
+  [ "$CUSTOM_HTTP_CHECK" == ❌* ] && RECOMMENDATIONS="$RECOMMENDATIONS\n- Create missing customHttp.yml file"
+  [ "$NEXTJS_OUTPUT_CHECK" == ❌* ] && RECOMMENDATIONS="$RECOMMENDATIONS\n- Set output: 'standalone' in next.config.js"
 fi
 
-RECOMMENDATIONS="$RECOMMENDATIONS\n\n### Recommendations"
+RECOMMENDATIONS="$RECOMMENDATIONS\n\n### AWS Amplify SSR Deployment Recommendations"
+if [ "$AMPLIFY_YML_CHECK" == ✅* ] && [ "$SERVER_JS_CHECK" == ✅* ] && [ "$AMPLIFY_SCRIPTS_CHECK" == ✅* ]; then
+  RECOMMENDATIONS="$RECOMMENDATIONS\n- Deployment should be ready - follow instructions in AMPLIFY-DEPLOYMENT-FINAL.md"
+  RECOMMENDATIONS="$RECOMMENDATIONS\n- Ensure AWS Amplify Console is set to 'Next.js - SSR' framework (not SSG)"
+  RECOMMENDATIONS="$RECOMMENDATIONS\n- Verify required environment variables are set in AWS Amplify Console"
+else
+  RECOMMENDATIONS="$RECOMMENDATIONS\n- Fix AWS Amplify SSR configuration issues before deployment"
+  [ "$AMPLIFY_YML_CHECK" != ✅* ] && RECOMMENDATIONS="$RECOMMENDATIONS\n- Ensure amplify.yml includes trace files and required-server-files.json"
+  [ "$SERVER_JS_CHECK" != ✅* ] && RECOMMENDATIONS="$RECOMMENDATIONS\n- Implement self-healing capabilities in server.js"
+  [ "$AMPLIFY_SCRIPTS_CHECK" != ✅* ] && RECOMMENDATIONS="$RECOMMENDATIONS\n- Create missing AWS Amplify scripts for post-build process"
+fi
+
+RECOMMENDATIONS="$RECOMMENDATIONS\n\n### General Recommendations"
 if [ $WARNING_CHECKS -eq 0 ]; then
   RECOMMENDATIONS="$RECOMMENDATIONS\n- Continue monitoring for potential issues"
 else
@@ -464,7 +628,24 @@ fi
 update_report "Recommendations" "$RECOMMENDATIONS"
 
 # Add next steps section
-NEXT_STEPS="- Fix all critical errors\n- Run verification script again\n- Do not proceed with delivery until all errors are fixed"
+NEXT_STEPS="- Fix all critical errors\n- Run verification script again\n- Do not proceed with AWS Amplify deployment until all errors are fixed"
+
+# Add AWS Amplify specific next steps
+if [ $FAILED_CHECKS -eq 0 ]; then
+  NEXT_STEPS="$NEXT_STEPS\n\n### AWS Amplify Deployment Steps\n"
+  NEXT_STEPS="$NEXT_STEPS\n1. Push all changes to your Git repository"
+  NEXT_STEPS="$NEXT_STEPS\n2. In AWS Amplify Console, create a new app connected to your Git repository"
+  NEXT_STEPS="$NEXT_STEPS\n3. Select the 'Next.js - SSR' framework (CRITICAL: NOT SSG)"
+  NEXT_STEPS="$NEXT_STEPS\n4. Set the following environment variables:"
+  NEXT_STEPS="$NEXT_STEPS\n   - NEXT_PUBLIC_COGNITO_USER_POOL_ID=your-cognito-user-pool-id"
+  NEXT_STEPS="$NEXT_STEPS\n   - NEXT_PUBLIC_COGNITO_CLIENT_ID=your-cognito-client-id"
+  NEXT_STEPS="$NEXT_STEPS\n   - AWS_REGION=us-east-1"
+  NEXT_STEPS="$NEXT_STEPS\n5. Click 'Save and deploy'"
+  NEXT_STEPS="$NEXT_STEPS\n6. Monitor the deployment logs for any issues"
+  NEXT_STEPS="$NEXT_STEPS\n7. Verify the application's functionality after deployment"
+  NEXT_STEPS="$NEXT_STEPS\n\nRefer to AMPLIFY-DEPLOYMENT-FINAL.md and NEXTJS-SSR-AMPLIFY-SOLUTION-FINAL.md for detailed instructions"
+fi
+
 update_report "Next Steps" "$NEXT_STEPS"
 
 # Print summary

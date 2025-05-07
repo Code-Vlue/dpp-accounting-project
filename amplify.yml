@@ -7,14 +7,14 @@ frontend:
     build:
       commands:
         - npm run build
-        - cp -r public/* .next/
-        - cp _routes.json .next/ || true
+        - cp -r public/* out/
+        - cp public/_routes.json out/ || true
     postBuild:
       commands:
         - echo "Verifying files for SPA routing"
-        - ls -la .next
+        - ls -la out
   artifacts:
-    baseDirectory: .next
+    baseDirectory: out
     files:
       - '**/*'
   cache:

@@ -21,18 +21,11 @@ const nextConfig = {
   // Required for static export
   output: 'export',
   
-  // Disable trailing slash
+  // Disable trailing slash - helps with static routing
   trailingSlash: false,
   
-  // SPA-like routing for static export
-  rewrites: async () => {
-    return [
-      {
-        source: '/:path*',
-        destination: '/'
-      }
-    ];
-  }
+  // NOTE: 'rewrites' is not compatible with 'output: export' mode
+  // Client-side routing will be handled by custom scripts
 };
 
 module.exports = nextConfig;

@@ -9,8 +9,6 @@
     "lint": "next lint",
     "type-check": "tsc --noEmit",
     "amplify-fix": "node ./scripts/amplify-direct-deploy.js",
-    "copy-static": "cp -r public/* out/ || echo 'No out directory yet'",
-    "postbuild": "npm run copy-static || true",
     "deploy:dev": "bash ./scripts/deploy-to-aws.sh development",
     "deploy:staging": "bash ./scripts/deploy-to-aws.sh staging",
     "deploy:prod": "bash ./scripts/deploy-to-aws.sh production",

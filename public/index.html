@@ -1,60 +1,54 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>DPP Accounting Platform</title>
-  <meta name="description" content="Comprehensive financial management for the Denver Preschool Program" />
-  
-  <!-- Environment Variables Meta Tags -->
-  <meta name="env-COGNITO_USER_POOL_ID" content="__COGNITO_USER_POOL_ID__" />
-  <meta name="env-COGNITO_CLIENT_ID" content="__COGNITO_CLIENT_ID__" />
-  <meta name="env-API_URL" content="__API_URL__" />
-  <meta name="env-SITE_URL" content="__SITE_URL__" />
-  
-  <!-- Environment Config Script - Injected at build time by Amplify -->
-  <script src="/env-config.js"></script>
-  
-  <!-- Prevent 404 errors for favicon -->
-  <link rel="icon" href="/favicon.ico" />
-  
-  <!-- Script to inject environment variables -->
-  <script>
-    // Inject environment variables from Amplify
-    window.COGNITO_USER_POOL_ID = '__COGNITO_USER_POOL_ID__';
-    window.COGNITO_CLIENT_ID = '__COGNITO_CLIENT_ID__';
-    window.REGION = '__REGION__';
-    window.API_URL = '__API_URL__';
-    window.SITE_URL = '__SITE_URL__';
-  </script>
-</head>
-<body>
-  <div id="__next"></div>
-  <script>
-    // Handle SPA routing
-    (function() {
-      // Preserve the URL on page load
-      const initialUrl = window.location.href;
-      const initialPath = window.location.pathname;
-      
-      // Wait for Next.js to load
-      window.addEventListener('DOMContentLoaded', function() {
-        // Check if we need to redirect to the initial path
-        if (initialPath !== '/' && 
-            !initialPath.startsWith('/_next') && 
-            !initialPath.match(/\.(js|css|png|jpg|jpeg|gif|svg|ico|json|html)$/)) {
-          
-          // Store the initial path for Next.js to use
-          window.history.replaceState(
-            { as: initialPath, url: initialPath },
-            '',
-            initialPath
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>DPP Accounting Platform</title>
+    <meta name="description" content="Comprehensive financial management for the Denver Preschool Program">
+    
+    <!-- Start Single Page Apps for GitHub Pages -->
+    <script type="text/javascript">
+      // Single Page Apps for GitHub Pages
+      // MIT License
+      // https://github.com/rafgraph/spa-github-pages
+      // This script checks to see if a redirect is present in the query string,
+      // converts it back into the correct url and adds it to the
+      // browser's history using window.history.replaceState(...),
+      // which won't cause the browser to attempt to load the new url.
+      // When the single page app is loaded further down in this file,
+      // the correct url will be waiting in the browser's history for
+      // the single page app to route accordingly.
+      (function(l) {
+        if (l.search[1] === '/' ) {
+          var decoded = l.search.slice(1).split('&').map(function(s) { 
+            return s.replace(/~and~/g, '&')
+          }).join('?');
+          window.history.replaceState(null, null,
+              l.pathname.slice(0, -1) + decoded + l.hash
           );
         }
-      });
-    })();
-  </script>
-  
-  <!-- Next.js will inject its scripts here -->
-</body>
+        
+        // Special handling for 'path' parameter
+        if (l.search.indexOf('?path=') !== -1) {
+          var path = l.search.match(/(\?|&)path=([^&]*)/)[2];
+          if (path) {
+            window.history.replaceState(null, null, '/' + path + (l.hash || ''));
+          }
+        }
+      }(window.location))
+    </script>
+    <!-- End Single Page Apps for GitHub Pages -->
+    
+    <!-- Environment Variables -->
+    <script>
+      window.COGNITO_USER_POOL_ID = '__COGNITO_USER_POOL_ID__';
+      window.COGNITO_CLIENT_ID = '__COGNITO_CLIENT_ID__';
+      window.REGION = '__REGION__';
+      window.API_URL = '__API_URL__';
+      window.SITE_URL = '__SITE_URL__';
+    </script>
+  </head>
+  <body>
+    <div id="__next"></div>
+  </body>
 </html>

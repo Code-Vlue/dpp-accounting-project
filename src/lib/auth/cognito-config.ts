@@ -91,7 +91,7 @@ if (typeof window !== 'undefined') {
   if (process.env.NODE_ENV === 'development') {
     console.log('Available environment sources:', {
       nextPublicVars: Object.keys(process.env).filter(k => k.startsWith('NEXT_PUBLIC_')),
-      windowEnv: window.ENV ? 'Available' : 'Not Available',
+      windowEnv: (window as any).ENV ? 'Available' : 'Not Available',
       windowVars: ['COGNITO_USER_POOL_ID', 'COGNITO_CLIENT_ID', 'REGION'].filter(k => (window as any)[k]),
     });
   }

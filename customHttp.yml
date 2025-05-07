@@ -1,13 +1,38 @@
 customHeaders:
+  # Default cache control for all files
   - pattern: '**/*'
     headers:
       - key: 'Cache-Control'
         value: 'public, max-age=0, must-revalidate'
+      - key: 'X-Content-Type-Options'
+        value: 'nosniff'
+      - key: 'X-Frame-Options'
+        value: 'DENY'
+      - key: 'X-XSS-Protection'
+        value: '1; mode=block'
+      - key: 'Referrer-Policy'
+        value: 'strict-origin-when-cross-origin'
+  
+  # Static assets can be cached for a long time
   - pattern: '/_next/static/**/*'
     headers:
       - key: 'Cache-Control'
         value: 'public, max-age=31536000, immutable'
+  
+  # Public static assets
   - pattern: '/static/**/*'
     headers:
       - key: 'Cache-Control'
         value: 'public, max-age=31536000, immutable'
+  
+  # Images
+  - pattern: '/_next/image*'
+    headers:
+      - key: 'Cache-Control'
+        value: 'public, max-age=86400'
+  
+  # API routes
+  - pattern: '/api/**/*'
+    headers:
+      - key: 'Cache-Control'
+        value: 'no-cache, no-store, must-revalidate'

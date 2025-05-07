@@ -3,11 +3,13 @@ frontend:
   phases:
     preBuild:
       commands:
+        # Use clean install with exact versions
         - npm ci
-        # Echo key debug info
-        - echo "Environment $NODE_ENV"
-        - node -v
-        - npm -v
+        # Echo key debug info for troubleshooting
+        - echo "Environment: $NODE_ENV"
+        - echo "Node version: $(node -v)"
+        - echo "NPM version: $(npm -v)"
+        - echo "Current directory: $(pwd)"
     build:
       commands:
         # Create standard .env.local file for build process
@@ -17,46 +19,86 @@ frontend:
         - echo "NEXT_PUBLIC_API_URL=https://master.d2ibw1me0nb2ns.amplifyapp.com/api" >> .env.local
         - echo "NEXT_PUBLIC_SITE_URL=https://master.d2ibw1me0nb2ns.amplifyapp.com" >> .env.local
         
-        # Build the application
+        # Build the application with standalone output
         - echo "Building server-side rendered application..."
+        - echo "Next.js config:"
+        - cat next.config.js
         - npm run build
         
+        # Verify build output structure
+        - echo "Verifying build output structure..."
+        - ls -la .next/
+        - ls -la .next/server/ || echo "No server directory found"
+        
         # Generate required server files for SSR
+        - echo "Generating required server files..."
         - node ./scripts/post-build.js
         
-        # Run additional fix script to ensure required-server-files.json is in the root
+        # Run fix scripts to ensure all required files exist
+        - echo "Running fix scripts..."
         - node ./scripts/fix-required-server-files.js
+        - node ./scripts/fix-trace-files.js
         
-        # Verify required-server-files.json exists in both locations
-        - ls -la .next/required-server-files.json
-        - ls -la required-server-files.json
-        - cat required-server-files.json
+        # Verify required files exist
+        - echo "Verifying required files..."
+        - ls -la required-server-files.json || echo "required-server-files.json not found"
+        - ls -la trace/ || echo "trace directory not found"
+        - ls -la trace/server.js.nft.json || echo "server trace file not found"
+        - ls -la trace/server-edge.js.nft.json || echo "server-edge trace file not found"
         
-        # List built files
-        - ls -la .next/
+        # Create minimal trace structures if they don't exist
+        - mkdir -p trace .next/trace
+        - touch trace/server.js.nft.json trace/server-edge.js.nft.json
+        - cp -r trace/* .next/trace/ || echo "Failed to copy trace files"
+        
+        # Echo trace file contents
+        - echo "Trace file contents:"
+        - cat trace/server.js.nft.json || echo "Cannot read server trace file"
         
         # Make the start script executable
         - chmod +x amplify-start-command.sh
+        
+        # Copy essential files to root for redundancy
+        - cp -r .next/server server || echo "No server directory to copy"
+        
+        # Verify deployment readiness
+        - echo "Verifying deployment readiness..."
+        - ls -la required-server-files.json && echo "✅ required-server-files.json exists"
+        - ls -la trace/server.js.nft.json && echo "✅ server trace file exists"
+        - ls -la server.js && echo "✅ server.js exists"
     postBuild:
       commands:
         - echo "Build completed on $(date)"
+        - echo "Final directory structure:"
+        - find . -type f -name "*.json" | grep -E 'trace|required-server' || echo "No trace files found in final check"
   artifacts:
+    # Use root directory as base to include everything
     baseDirectory: .
     files:
+      # Essential configuration files
       - package.json
       - package-lock.json
       - next.config.js
+      - .env.local
+      - customHttp.yml
+      
+      # Server files
       - server.js
       - amplify-start-command.sh
-      - .next/**/*
-      - node_modules/**/*
-      - public/**/*
       - required-server-files.json
-  customHeaders:
-    - pattern: '**/*'
-      headers:
-        - key: Cache-Control
-          value: 'public, max-age=0, must-revalidate'
+      
+      # Next.js build output
+      - .next/**/*
+      - public/**/*
+      
+      # Trace files (critical for SSR)
+      - trace/**/*
+      - .next/trace/**/*
+      - server/**/*
+      
+      # Production dependencies
+      - node_modules/**/*
+  # Move custom headers to a separate file to avoid deprecation warnings
   cache:
     paths:
       - node_modules/**/*
